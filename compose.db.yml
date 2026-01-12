@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:14.15-alpine3.20
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_DB: cdp_sbom_explorer_backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/data
+
+  liquibase:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM liquibase/liquibase:latest
+        RUN lpm add postgresql --global
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/cdp_sbom_explorer_backend
+      LIQUIBASE_COMMAND_USERNAME: postgres
+      LIQUIBASE_COMMAND_PASSWORD: password
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: db.changelog.xml
+    links:
+      - 'postgres:postgres'
+    volumes:
+      - ./changelog:/liquibase/changelog
+    command: --log-level=info update
+    restart: no
+
+################################################################################
+
+volumes:
+  postgres-data:

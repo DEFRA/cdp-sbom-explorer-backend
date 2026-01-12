@@ -22,50 +22,49 @@ services:
     networks:
       - cdp-tenant
 
-  redis:
-    image: redis:7.2.3-alpine3.18
-    ports:
-      - '6379:6379'
-    restart: always
+  postgres:
+    image: postgres:14.15-alpine3.20
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_DB: cdp_example_node_postgres_be
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
     networks:
       - cdp-tenant
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/data
 
-  ################################################################################
-
-  # frontend:
-  #   image: defradigital/frontend:${FRONTEND_VERSION:-latest}
-  #   ports:
-  #     - '3000:3000'
-  #   links:
-  #     - 'localstack:localstack'
-  #     - 'redis:redis'
-  #   depends_on:
-  #     localstack:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_started
-  #   env_file:
-  #     - 'compose/aws.env'
-  #   environment:
-  #     PORT: 3000
-  #     NODE_ENV: development
-  #     REDIS_HOST: redis
-  #     LOCALSTACK_ENDPOINT: http://localstack:4566
-  #     USE_SINGLE_INSTANCE_CACHE: true
-  #   networks:
-  #     - cdp-tenant
+  liquibase:
+    image: liquibase/liquibase:4
+    depends_on:
+      postgres:
+        condition: service_started
+    volumes:
+      - ./changelog:/liquibase/changelog
+    command: --url=jdbc:postgresql://postgres:5432/cdp_example_node_postgres_be --username=postgres --password=postgres --changelog-file=changelog/db.changelog.xml update
+    networks:
+      - cdp-tenant
+    restart: no
 
   cdp-sbom-explorer-backend:
     build:
       context: .
       target: development
     ports:
-      - '3001:3001'
+      - '3003:3003'
     links:
       - 'localstack:localstack'
     depends_on:
       localstack:
         condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
     env_file:
       - 'compose/aws.env'
     environment:
@@ -84,3 +83,6 @@ networks:
   cdp-tenant:
     driver: bridge
     name: cdp-tenant
+
+volumes:
+  postgres-data:
