@@ -5,7 +5,7 @@ const logger = createLogger()
  * Upserts any dependency objects and links them to an entity.
  * Uses `unnest` for performance/bulk inserting.
  * @param { import('pg-pool').Pool } pg
- * @param {number} entityId
+ * @param {number|BigInt} entityId
  * @param {{type: string, name: string, version: string, versionNum: BigInt}[]} deps
  * @returns {Promise<{inserted: number}>}
  */
@@ -61,5 +61,6 @@ export async function persistDependencies(pg, entityId, deps) {
   } catch (e) {
     logger.error(e)
     await pg.query('ROLLBACK')
+    throw e
   }
 }

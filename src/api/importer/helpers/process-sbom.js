@@ -12,7 +12,7 @@ const componentTypesToIgnore = new Set(['file'])
  *
  * @param pg
  * @param {{name: string, version: string, stage: string}} source
- * @param rawSBOM
+ * @param {string} rawSBOM
  * @param {{reprocess: boolean|null}} options
  * @returns {Promise<{inserted: number}>}
  */

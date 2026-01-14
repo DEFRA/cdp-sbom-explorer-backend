@@ -1,5 +1,6 @@
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { createGunzip } from 'node:zlib'
+import { Buffer } from 'node:buffer'
 import { finished } from 'node:stream/promises'
 
 async function downloadAndDecompress(s3, bucket, key) {

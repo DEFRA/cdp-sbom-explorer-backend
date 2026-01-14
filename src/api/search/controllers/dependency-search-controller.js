@@ -4,6 +4,7 @@ import {
   findByDependencyNameVersionRange
 } from '../database/search-queries.js'
 import { semverToBigint } from '../../importer/helpers/semver-to-bigint.js'
+import Joi from 'joi'
 
 /**
  * API for searching for which entities use a given dependency.
@@ -12,7 +13,16 @@ import { semverToBigint } from '../../importer/helpers/semver-to-bigint.js'
  * @type {{options: {}, handler: function(*, *): Promise<*>}}
  */
 const dependencySearchController = {
-  options: {},
+  options: {
+    validate: {
+      query: Joi.object({
+        name: Joi.string(),
+        version: Joi.string(),
+        versionGte: Joi.string(),
+        versionLte: Joi.string()
+      })
+    }
+  },
   handler: async (request, h) => {
     const name = request.query.name
     const version = request.query.version
