@@ -23,7 +23,7 @@ const config = convict({
   port: {
     doc: 'The port to bind',
     format: 'port',
-    default: 3001,
+    default: 3003,
     env: 'PORT'
   },
   serviceName: {
@@ -45,6 +45,79 @@ const config = convict({
     ],
     default: 'local',
     env: 'ENVIRONMENT'
+  },
+  aws: {
+    region: {
+      doc: 'AWS region',
+      format: String,
+      default: 'eu-west-2',
+      env: 'AWS_REGION'
+    },
+    s3: {
+      endpoint: {
+        doc: 'AWS S3 endpoint',
+        format: String,
+        default: null,
+        nullable: true,
+        env: 'S3_ENDPOINT'
+      },
+      forcePathStyle: {
+        doc: 'AWS S3 forcePathStyle option',
+        format: Boolean,
+        default: !isProduction
+      }
+    }
+  },
+  sbomBucket: {
+    doc: 'name of the SBOM S3 bucket',
+    format: String,
+    default: 'cdp-management-sbom',
+    nullable: true,
+    env: 'S3_SBOM_BUCKET'
+  },
+  postgres: {
+    host: {
+      doc: 'host for postgres',
+      format: String,
+      default: 'localhost',
+      env: 'DB_HOST'
+    },
+    port: {
+      doc: 'port for postgres',
+      format: Number,
+      default: 5432,
+      env: 'DB_PORT'
+    },
+    database: {
+      doc: 'database for postgres',
+      format: String,
+      default: 'cdp_sbom_explorer_backend',
+      env: 'DB_DATABASE'
+    },
+    user: {
+      doc: 'user for postgres',
+      format: String,
+      default: 'postgres',
+      env: 'DB_USER'
+    },
+    ssl: {
+      doc: 'connect using SSL',
+      format: Boolean,
+      default: isProduction,
+      env: 'DB_SSL'
+    },
+    useIAM: {
+      doc: 'enable iam authentication for postgres',
+      format: Boolean,
+      default: isProduction,
+      env: 'DB_IAM_AUTHENTICATION'
+    },
+    localPassword: {
+      doc: 'password for local development. used when iamAuthentication is not enabled',
+      format: String,
+      default: 'password',
+      env: 'DB_LOCAL_PASSWORD'
+    }
   },
   log: {
     isEnabled: {

@@ -3,11 +3,13 @@ import { secureContext } from '@defra/hapi-secure-context'
 
 import { config } from './config.js'
 import { router } from './plugins/router.js'
-import { requestLogger } from './common/helpers/logging/request-logger.js'
+import { requestLogger } from './plugins/request-logger.js'
 import { failAction } from './common/helpers/fail-action.js'
-import { pulse } from './common/helpers/pulse.js'
-import { requestTracing } from './common/helpers/request-tracing.js'
+import { pulse } from './plugins/pulse.js'
+import { requestTracing } from './plugins/request-tracing.js'
 import { setupProxy } from './common/helpers/proxy/setup-proxy.js'
+import { postgres } from './plugins/postgres.js'
+import { s3Client } from './plugins/s3-client.js'
 
 async function createServer() {
   setupProxy()
@@ -48,6 +50,14 @@ async function createServer() {
     requestTracing,
     secureContext,
     pulse,
+    { plugin: postgres.plugin, options: config.get('postgres') },
+    {
+      plugin: s3Client.plugin,
+      options: {
+        s3Config: config.get('aws.s3'),
+        region: config.get('aws.region')
+      }
+    },
     router
   ])
 

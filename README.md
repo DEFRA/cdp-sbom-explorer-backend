@@ -49,6 +49,20 @@ Install application dependencies:
 npm install
 ```
 
+### Postgres
+
+To start postgresql locally and apply the latest liquibase schema, start the `compose.db.yml` file:
+
+```bash
+$ docker compose -f compose.db.yml up -d
+```
+
+You can update the local copy of the schema (for testing with pg-mem) by running the following command:
+
+```bash
+$ docker exec -it -e PGPASSWORD=password  cdp-sbom-explorer-backend-postgres-1 pg_dump -U postgres -d cdp_sbom_explorer_backend --schema-only --no-owner --no-acl --disable-triggers --no-comments --no-publications --no-security-labels --no-subscriptions --no-tablespaces > schema.sql
+```
+
 ### Development
 
 To run the application in `development` mode run:

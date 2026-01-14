@@ -1,0 +1,104 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+
+  <changeSet author="Chris Turner" id="1">
+    <tagDatabase tag="v1.0.0" />
+  </changeSet>
+
+  <changeSet author="Chris Turner" id="2">
+    <createTable tableName="entities">
+      <column name="id" type="bigint" autoIncrement="true" >
+        <constraints nullable="false" primaryKey="true" primaryKeyName="entities_pkey" />
+      </column>
+      <column name="name" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="version" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="stage" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="created_at" type="timestamptz" defaultValueComputed="now()">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addUniqueConstraint columnNames="name, version, stage" constraintName="entities_name_version_stage_uniq" tableName="entities"/>
+
+    <createIndex tableName="entities" indexName="idx_entities_name_version_stage">
+      <column name="name"/>
+      <column name="version"/>
+      <column name="stage"/>
+    </createIndex>
+
+  </changeSet>
+
+  <changeSet author="Chris Turner" id="3">
+    <createTable tableName="dependencies">
+      <column name="id" type="bigint" autoIncrement="true" >
+        <constraints nullable="false" primaryKey="true" primaryKeyName="dependencies_pkey" />
+      </column>
+      <column name="type" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="name" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="version" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="version_num" type="BIGINT"/>
+    </createTable>
+
+    <addUniqueConstraint columnNames="type, name, version" constraintName="dependencies_type_name_version_uniq" tableName="dependencies"/>
+
+    <createIndex tableName="dependencies" indexName="idx_dependencies_name_version_num">
+      <column name="name"/>
+      <column name="type"/>
+      <column name="version_num"/>
+    </createIndex>
+
+    <createIndex tableName="dependencies" indexName="idx_dependencies_name">
+      <column name="name"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet author="Chris Turner" id="4">
+    <createTable tableName="entity_dependencies">
+      <column name="entity_id" type="bigint">
+        <constraints nullable="false" />
+      </column>
+      <column name="dependency_id" type="bigint">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+
+    <addPrimaryKey columnNames="entity_id, dependency_id"
+                   constraintName="entity_dependencies_pkey"
+                   tableName="entity_dependencies"/>
+
+    <addForeignKeyConstraint baseTableName="entity_dependencies"
+                             baseColumnNames="entity_id"
+                             referencedTableName="entities"
+                             referencedColumnNames="id"
+                             constraintName="entity_dependencies_entity_fk"
+                             onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint baseTableName="entity_dependencies"
+                             baseColumnNames="dependency_id"
+                             referencedTableName="dependencies"
+                             referencedColumnNames="id"
+                             constraintName="entity_dependencies_dependency_fk"
+                             onDelete="CASCADE"/>
+
+    <createIndex tableName="entity_dependencies" indexName="idx_entity_dependencies_entity">
+      <column name="entity_id"/>
+    </createIndex>
+
+    <createIndex tableName="entity_dependencies" indexName="idx_entity_dependencies_dependency">
+      <column name="dependency_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>
