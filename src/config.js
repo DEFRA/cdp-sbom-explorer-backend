@@ -117,6 +117,12 @@ const config = convict({
       format: String,
       default: 'password',
       env: 'DB_LOCAL_PASSWORD'
+    },
+    region: {
+      doc: 'AWS region',
+      format: String,
+      default: 'eu-west-2',
+      env: 'AWS_REGION'
     }
   },
   log: {
