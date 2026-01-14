@@ -4,7 +4,7 @@
  * @param {string} name
  * @param {string} version
  * @param {string} stage
- * @return {Promise<BigInt>}
+ * @return {Promise<Number>}
  */
 export async function upsertEntity(pg, name, version, stage) {
   const upsertSql = `INSERT INTO entities (name, version, stage)
@@ -14,5 +14,5 @@ export async function upsertEntity(pg, name, version, stage) {
                          id = entities.id
                      RETURNING id`
   const result = await pg.query(upsertSql, [name, version, stage])
-  return BigInt(result.rows[0]?.id)
+  return Number(result.rows[0]?.id)
 }

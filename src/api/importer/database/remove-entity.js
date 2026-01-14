@@ -1,3 +1,9 @@
+/**
+ * Removes a specific entity by id and any dependencies associated with it
+ * @param { import('pg-pool').Pool } pg
+ * @param {number|BigInt} entityId
+ * @return {Promise<void>}
+ */
 async function removeEntity(pg, entityId) {
   await pg.query('BEGIN')
   try {
