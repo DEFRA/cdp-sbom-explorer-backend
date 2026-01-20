@@ -66,6 +66,47 @@ const config = convict({
         format: Boolean,
         default: !isProduction
       }
+    },
+    sqs: {
+      endpoint: {
+        doc: 'AWS SQS endpoint',
+        format: String,
+        default: null,
+        nullable: true,
+        env: 'SQS_ENDPOINT'
+      }
+    }
+  },
+  sbomQueue: {
+    queueUrl: {
+      doc: 'URL of sqs queue providing SBOM bucket events',
+      format: String,
+      default: 'sbom-bucket-events',
+      env: 'SQS_SBOM_QUEUE'
+    },
+    waitTimeSeconds: {
+      doc: 'The duration for which the call will wait for a message to arrive in the queue before returning',
+      format: Number,
+      default: 10,
+      env: 'SQS_GITHUB_WAIT_TIME_SECONDS'
+    },
+    visibilityTimeout: {
+      doc: 'The duration (in seconds) that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request.',
+      format: Number,
+      default: 400,
+      env: 'SQS_VISIBILITY_TIMEOUT'
+    },
+    pollingWaitTimeMs: {
+      doc: 'The duration to wait before repolling the queue',
+      format: Number,
+      default: 0,
+      env: 'SQS_POLLING_WAIT_TIME_MS'
+    },
+    enabled: {
+      doc: 'Should the service listen for gitHub webhook events?',
+      format: Boolean,
+      default: true,
+      env: 'SQS_ENABLED'
     }
   },
   sbomBucket: {

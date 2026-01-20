@@ -5,8 +5,17 @@ import { getPackageType } from './get-package-type.js'
 import { semverToBigint } from './semver-to-bigint.js'
 import { findEntityId } from '../database/find-entity-id.js'
 import { removeEntity } from '../database/remove-entity.js'
+import { sourceFromPath } from './source-from-path.js'
+import { downloadAndDecompress } from './download-and-decompress.js'
 
 const componentTypesToIgnore = new Set(['file'])
+
+async function importSbom({ pg, s3Client, logger }, bucket, key, options = {}) {
+  const source = sourceFromPath(key)
+  const raw = await downloadAndDecompress(s3Client, bucket, key)
+
+  return await processSbom(pg, source, raw, options)
+}
 
 /**
  *
@@ -39,11 +48,14 @@ async function processSbom(pg, source, rawSBOM, options = {}) {
     entityVersion,
     entityStage
   )
-  if (existingEntityId && options.reprocess) {
-    await removeEntity(pg, existingEntityId)
+  if (existingEntityId) {
+    if (options.reprocess) {
+      await removeEntity(pg, existingEntityId)
+    } else {
+      return { inserted: 0 }
+    }
   }
 
-  // TODO: update query to search by stage as well
   const entityId = await upsertEntity(
     pg,
     entityName,
@@ -65,4 +77,4 @@ async function processSbom(pg, source, rawSBOM, options = {}) {
   return await persistDependencies(pg, entityId, deps)
 }
 
-export { processSbom }
+export { importSbom, processSbom }

@@ -1,18 +1,25 @@
 import { S3Client } from '@aws-sdk/client-s3'
+import { config } from '../config.js'
 
 /**
  * @satisfies {import('@hapi/hapi').Plugin}
  */
-const s3Client = {
+const s3 = {
   plugin: {
-    name: 's3Client',
-    version: '0.1.0',
+    name: 's3',
+    version: '1.0.0',
     register(server, options) {
-      const client = new S3Client({
-        region: options.region,
-        endpoint: options.endpoint,
+      const clientConfig = {
+        region: config.get('aws.region'),
         forcePathStyle: options.forcePathStyle
-      })
+      }
+
+      // Override endpoint if required
+      if (options.endpoint) {
+        clientConfig.endpoint = options.endpoint
+      }
+
+      const client = new S3Client(clientConfig)
 
       server.decorate('request', 's3Client', client)
       server.decorate('server', 's3Client', client)
@@ -25,4 +32,4 @@ const s3Client = {
   }
 }
 
-export { s3Client }
+export { s3 }
