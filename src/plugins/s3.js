@@ -1,5 +1,4 @@
 import { S3Client } from '@aws-sdk/client-s3'
-import { config } from '../config.js'
 
 /**
  * @satisfies {import('@hapi/hapi').Plugin}
@@ -10,7 +9,7 @@ const s3 = {
     version: '1.0.0',
     register(server, options) {
       const clientConfig = {
-        region: config.get('aws.region'),
+        region: options.region,
         forcePathStyle: options.forcePathStyle
       }
 

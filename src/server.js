@@ -55,10 +55,17 @@ async function createServer() {
     { plugin: postgres.plugin, options: config.get('postgres') },
     {
       plugin: s3.plugin,
-      options: config.get('aws.s3')
+      options: {
+        region: config.get('aws.region'),
+        ...config.get('aws.s3')
+      }
     },
     {
-      plugin: sqs.plugin
+      plugin: sqs.plugin,
+      options: {
+        region: config.get('aws.region'),
+        ...config.get('aws.sqs')
+      }
     },
     {
       plugin: sbomBucketListener.plugin,

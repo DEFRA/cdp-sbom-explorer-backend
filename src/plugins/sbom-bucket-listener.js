@@ -12,15 +12,21 @@ const sbomBucketListener = {
         return
       }
 
+      if (!server.sqsClient) {
+        throw new Error(
+          'server.sqsClient does not exist, check sqs plugin has been loaded'
+        )
+      }
+
       const queueUrl = options.queueUrl
       server.logger.info(
         `Bucket change listener is listening for events on ${queueUrl}`
       )
 
       const consumer = Consumer.create({
-        sqs: server.sqs,
+        sqs: server.sqsClient,
         queueUrl,
-        useQueueUrlAsEndpoint: true,
+        //useQueueUrlAsEndpoint: true,
         attributeNames: ['SentTimestamp'],
         messageAttributeNames: ['All'],
         waitTimeSeconds: options.waitTimeSeconds,

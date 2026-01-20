@@ -1,8 +1,4 @@
-import {
-  findByDependencyName,
-  findByDependencyNameVersion,
-  findByDependencyNameVersionRange
-} from '../database/search-queries.js'
+import { findByDependencies } from '../database/search-queries.js'
 import { semverToBigint } from '../../importer/helpers/semver-to-bigint.js'
 import Joi from 'joi'
 
@@ -16,45 +12,27 @@ const dependencySearchController = {
   options: {
     validate: {
       query: Joi.object({
-        name: Joi.string(),
+        name: Joi.string().required(),
         version: Joi.string(),
-        versionGte: Joi.string(),
-        versionLte: Joi.string()
+        type: Joi.string(),
+        gte: Joi.string(),
+        lte: Joi.string(),
+        environment: Joi.string()
       })
     }
   },
   handler: async (request, h) => {
-    const name = request.query.name
-    const version = request.query.version
-    const versionGte = request.query.versionGte
-    const versionLte = request.query.versionLte
+    const searchQuery = request.query
 
-    if (!name) {
-      return h.response({ message: 'name is required' }).code(400)
+    if (searchQuery.gte) {
+      searchQuery.gte = semverToBigint(searchQuery.gte)
     }
 
-    if (version) {
-      const matches = await findByDependencyNameVersion(
-        request.pg,
-        name,
-        version
-      )
-      return h.response(matches).code(200)
+    if (searchQuery.lte) {
+      searchQuery.lte = semverToBigint(searchQuery.lte)
     }
 
-    if (versionGte && versionLte) {
-      const gte = semverToBigint(versionGte)
-      const lte = semverToBigint(versionLte)
-      const matches = await findByDependencyNameVersionRange(
-        request.pg,
-        name,
-        gte,
-        lte
-      )
-      return h.response(matches).code(200)
-    }
-
-    const matches = await findByDependencyName(request.pg, name)
+    const matches = await findByDependencies(request.pg, searchQuery)
     return h.response(matches).code(200)
   }
 }

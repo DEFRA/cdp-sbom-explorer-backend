@@ -8,7 +8,7 @@ const logger = createLogger()
 
 /**
  *
- * @param {{s3Client, sqs }} server
+ * @param {{s3Client, sqsClient }} server
  * @param {string} bucket
  * @param {string} queue
  * @param {number} pageSize
@@ -53,7 +53,7 @@ async function addAllS3KeysToWorklist(server, bucket, queue, pageSize = 1000) {
       }
     }
 
-    await pushWorkItemsToQueue(server.sqs, queue, keys)
+    await pushWorkItemsToQueue(server.sqsClient, queue, keys)
     keysSent += keys.length
     logger.info(`Total keys backfilled: ${keysSent}`)
 
@@ -67,8 +67,6 @@ async function addAllS3KeysToWorklist(server, bucket, queue, pageSize = 1000) {
 async function initBackfill(request) {
   const bucket = config.get('sbomBucket')
   const queue = config.get('sbomQueue.queueUrl')
-  console.log(request.s3Client)
-  console.log(request.sqs)
   await addAllS3KeysToWorklist(request, bucket, queue, 100)
 }
 

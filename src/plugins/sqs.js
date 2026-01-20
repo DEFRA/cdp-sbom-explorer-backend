@@ -7,6 +7,7 @@ const sqs = {
     name: 'sqs',
     version: '1.0.0',
     register: async function (server, options) {
+      console.log(options)
       const clientConfig = {
         region: options.region
       }
@@ -17,8 +18,8 @@ const sqs = {
       if (sqsClient === null) {
         sqsClient = new SQSClient(clientConfig)
       }
-      server.decorate('server', 'sqs', sqsClient)
-      server.decorate('request', 'sqs', sqsClient)
+      server.decorate('server', 'sqsClient', sqsClient)
+      server.decorate('request', 'sqsClient', sqsClient)
     }
   }
 }
