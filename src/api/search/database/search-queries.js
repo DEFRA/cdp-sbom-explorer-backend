@@ -1,59 +1,79 @@
+const whereDepName = (idx) => `d.name = $${idx}`
+const whereDepVersion = (idx) => `d.version = $${idx}`
+const whereDepVersionGte = (idx) => `d.version_num >= $${idx}`
+const whereDepVersionLte = (idx) => `d.version_num <= $${idx}`
+const whereEnvironment = (idx) => `dpl.environment = $${idx}`
+const whereType = (idx) => `d.type = $${idx}`
+const whereStage = (idx) => `e.stage = $${idx}`
+
+const whereClauses = {
+  name: whereDepName,
+  version: whereDepVersion,
+  gte: whereDepVersionGte,
+  lte: whereDepVersionLte,
+  environment: whereEnvironment,
+  type: whereType,
+  stage: whereStage
+}
+
 /**
- *
- * @param { import('pg-pool').Pool } pg
- * @param {string} name
- * @return {Promise<{name: string, version: string, stage: string}[]>}
+ * A basic WHERE clause builder to support dynamic queries.
+ * @param {Object} query
+ * @return {{sql: string, values: *[]}|undefined}
  */
-async function findByDependencyName(pg, name) {
-  const sqlNameOnly = `
-    SELECT e.name, e.version, e.stage FROM  entity_dependencies as ed
-    JOIN entities as e ON e.id = ed.entity_id
-    JOIN dependencies as d ON d.id = ed.dependency_id
-    WHERE d.name = $1
-  `
-  const result = await pg.query(sqlNameOnly, [name])
-  return result.rows
+export function buildSearchQuery(query) {
+  // TODO: maybe use Joi to validate this instead?
+  const keys = Object.keys(query).filter((q) => whereClauses[q])
+  if (keys.length === 0) {
+    return undefined
+  }
+
+  const where = []
+  const values = []
+
+  for (const key of keys) {
+    if (!whereClauses[key]) {
+      continue
+    }
+    where.push(whereClauses[key](where.length + 1))
+    values.push(query[key])
+  }
+
+  const select =
+    'SELECT e.name, e.version, e.stage, d.version as depversion, d.type as deptype FROM entity_dependencies as ed'
+  const joins = [
+    'JOIN entities as e ON e.id = ed.entity_id',
+    'JOIN dependencies as d ON d.id = ed.dependency_id'
+  ]
+
+  // We only need to join deployments if we're filtering by environment
+  if (query.environment) {
+    joins.push(
+      'JOIN deployments as dpl ON dpl.name = e.name AND dpl.version = e.version'
+    )
+  }
+
+  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')}`
+  return { sql, values }
 }
 
 /**
  *
  * @param { import('pg-pool').Pool } pg
- * @param {string} name
- * @param {string} version
+ * @param {{name: string|null, version: string|null, lte: string|null, gte: string|null, environment: string|null }} query
  * @return {Promise<{name: string, version: string, stage: string}[]>}
  */
-async function findByDependencyNameVersion(pg, name, version) {
-  const sqlNameVersion = `
-    SELECT e.name, e.version, e.stage FROM  entity_dependencies as ed
-    JOIN entities as e ON e.id = ed.entity_id
-    JOIN dependencies as d ON d.id = ed.dependency_id
-    WHERE d.name = $1 AND d.version = $2
-  `
-  const result = await pg.query(sqlNameVersion, [name, version])
+async function findByDependencies(pg, query) {
+  const { sql, values } = buildSearchQuery(query)
+  if (!sql || !values) {
+    throw new Error(
+      `Invalid query [${Object.keys(query).join(', ')}] can only use [${Object.keys(whereClauses).join(', ')}] `
+    )
+  }
+
+  console.log(sql, values)
+  const result = await pg.query(sql, values)
   return result.rows
 }
 
-/**
- *
- * @param { import('pg-pool').Pool } pg
- * @param {string} name
- * @param {bigint} gte
- * @param {bigint} lte
- * @return {Promise<{name: string, version: string, stage: string}[]>}
- */
-async function findByDependencyNameVersionRange(pg, name, gte, lte) {
-  const sqlNameVersionRange = `
-    SELECT e.name, e.version, e.stage FROM  entity_dependencies as ed
-    JOIN entities as e ON e.id = ed.entity_id
-    JOIN dependencies as d ON d.id = ed.dependency_id
-    WHERE d.name = $1 AND (d.version_num >= $2 AND d.version_num <= $3)
-  `
-  const result = await pg.query(sqlNameVersionRange, [name, gte, lte])
-  return result.rows
-}
-
-export {
-  findByDependencyName,
-  findByDependencyNameVersion,
-  findByDependencyNameVersionRange
-}
+export { findByDependencies }

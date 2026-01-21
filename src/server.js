@@ -9,7 +9,9 @@ import { pulse } from './plugins/pulse.js'
 import { requestTracing } from './plugins/request-tracing.js'
 import { setupProxy } from './common/helpers/proxy/setup-proxy.js'
 import { postgres } from './plugins/postgres.js'
-import { s3Client } from './plugins/s3-client.js'
+import { s3 } from './plugins/s3.js'
+import { sqs } from './plugins/sqs.js'
+import { sbomBucketListener } from './plugins/sbom-bucket-listener.js'
 
 async function createServer() {
   setupProxy()
@@ -52,11 +54,22 @@ async function createServer() {
     pulse,
     { plugin: postgres.plugin, options: config.get('postgres') },
     {
-      plugin: s3Client.plugin,
+      plugin: s3.plugin,
       options: {
-        s3Config: config.get('aws.s3'),
-        region: config.get('aws.region')
+        region: config.get('aws.region'),
+        ...config.get('aws.s3')
       }
+    },
+    {
+      plugin: sqs.plugin,
+      options: {
+        region: config.get('aws.region'),
+        ...config.get('aws.sqs')
+      }
+    },
+    {
+      plugin: sbomBucketListener.plugin,
+      options: config.get('sbomQueue')
     },
     router
   ])

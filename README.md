@@ -1,6 +1,6 @@
 # cdp-sbom-explorer-backend
 
-Core delivery platform Node.js Backend Template.
+Microservice for importing and indexing SBOMs.
 
 - [Requirements](#requirements)
   - [Node.js](#nodejs)
@@ -29,177 +29,54 @@ Core delivery platform Node.js Backend Template.
 
 ### Node.js
 
-Please install [Node.js](http://nodejs.org/) `>= v22` and [npm](https://nodejs.org/) `>= v11`. You will find it
-easier to use the Node Version Manager [nvm](https://github.com/creationix/nvm)
-
-To use the correct version of Node.js for this application, via nvm:
+Use `nvm` and `npm` to install the correct versions of Node & the project dependencies
 
 ```bash
-cd cdp-sbom-explorer-backend
 nvm use
+npm i
 ```
 
 ## Local development
 
-### Setup
-
-Install application dependencies:
-
-```bash
-npm install
-```
-
 ### Postgres
 
+Unlike the other platform services, cdp-sbom-explorer-backend uses Postgres.
 To start postgresql locally and apply the latest liquibase schema, start the `compose.db.yml` file:
 
 ```bash
 $ docker compose -f compose.db.yml up -d
 ```
 
-You can update the local copy of the schema (for testing with pg-mem) by running the following command:
+For unit tests, the project uses `pg-mem` to test some of the database calls. This requires a separate copy of the schema (`schema.sql`) as a sql file.
+To keep this up-to-date you can regenerate with the following command.
 
 ```bash
 $ docker exec -it -e PGPASSWORD=password  cdp-sbom-explorer-backend-postgres-1 pg_dump -U postgres -d cdp_sbom_explorer_backend --schema-only --no-owner --no-acl --disable-triggers --no-comments --no-publications --no-security-labels --no-subscriptions --no-tablespaces > schema.sql
 ```
 
-### Development
+This requires postgres to be running via docker and the liquibase schema applied.
 
-To run the application in `development` mode run:
+### Localstack
 
-```bash
-npm run dev
-```
+To test imports locally, localstack can be used.
+It requires the following items to be provisioned:
 
-### Testing
+- S3 bucket
+- SQS Queue for bucket notifications
+- Bucket notification to be enabled and configured to send to the queue
 
-To test the application run:
+When running locally ensure the following:
 
-```bash
-npm run test
-```
-
-### Production
-
-To mimic the application running in `production` mode locally run:
-
-```bash
-npm start
-```
-
-### Npm scripts
-
-All available Npm scripts can be seen in [package.json](./package.json).
-To view them in your command line run:
-
-```bash
-npm run
-```
-
-### Update dependencies
-
-To update dependencies use [npm-check-updates](https://github.com/raineorshine/npm-check-updates):
-
-> The following script is a good start. Check out all the options on
-> the [npm-check-updates](https://github.com/raineorshine/npm-check-updates)
-
-```bash
-ncu --interactive --format group
-```
-
-### Formatting
-
-#### Windows prettier issue
-
-If you are having issues with formatting of line breaks on Windows update your global git config by running:
-
-```bash
-git config --global core.autocrlf false
-```
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_KEY` are set up to use the localstack creds
+- `S3_ENDPOINT` and `SQS_ENDPOINT` are set and pointing at localstack
 
 ## API endpoints
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /health`       | Health                         |
-| `GET: /example    `  | Example API (remove as needed) |
-| `GET: /example/<id>` | Example API (remove as needed) |
-
-## Development helpers
-
-### Proxy
-
-We are using forward-proxy which is set up by default. To make use of this: `import { fetch } from 'undici'` then
-because of the `setGlobalDispatcher(new ProxyAgent(proxyUrl))` calls will use the ProxyAgent Dispatcher
-
-If you are not using Wreck, Axios or Undici or a similar http that uses `Request`. Then you may have to provide the
-proxy dispatcher:
-
-To add the dispatcher to your own client:
-
-```javascript
-import { ProxyAgent } from 'undici'
-
-return await fetch(url, {
-  dispatcher: new ProxyAgent({
-    uri: proxyUrl,
-    keepAliveTimeout: 10,
-    keepAliveMaxTimeout: 10
-  })
-})
-```
-
-## Docker
-
-### Development image
-
-Build:
-
-```bash
-docker build --target development --no-cache --tag cdp-sbom-explorer-backend:development .
-```
-
-Run:
-
-```bash
-docker run -e PORT=3001 -p 3001:3001 cdp-sbom-explorer-backend:development
-```
-
-### Production image
-
-Build:
-
-```bash
-docker build --no-cache --tag cdp-sbom-explorer-backend .
-```
-
-Run:
-
-```bash
-docker run -e PORT=3001 -p 3001:3001 cdp-sbom-explorer-backend
-```
-
-### Docker Compose
-
-A local environment with:
-
-- Localstack for AWS services (S3, SQS)
-- Redis
-- This service.
-- A commented out frontend example.
-
-```bash
-docker compose up --build -d
-```
-
-### Dependabot
-
-We have added an example dependabot configuration file to the repository. You can enable it by renaming
-the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github/dependabot.yml`
-
-### SonarCloud
-
-Instructions for setting up SonarCloud can be found in [sonar-project.properties](./sonar-project.properties)
+| Endpoint          | Description                                 |
+| :---------------- | :------------------------------------------ |
+| `GET: /health`    | Health                                      |
+| `POST: /backfill` | Triggers the backfill job                   |
+| `POST: /import`   | Imports a specific file (params key=s3 key) |
 
 ## Licence
 

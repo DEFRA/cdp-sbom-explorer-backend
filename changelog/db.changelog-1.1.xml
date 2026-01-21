@@ -1,0 +1,37 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+
+  <changeSet author="Chris Turner" id="1">
+    <tagDatabase tag="v1.1.0" />
+  </changeSet>
+
+  <changeSet author="Chris Turner" id="2">
+    <createTable tableName="deployments">
+      <column name="id" type="bigint" autoIncrement="true" >
+        <constraints nullable="false" primaryKey="true" primaryKeyName="deployments_pkey" />
+      </column>
+      <column name="name" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="version" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="environment" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="updated_at" type="timestamptz" defaultValueComputed="now()">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addUniqueConstraint columnNames="name, version, environment" constraintName="deployments_name_version_environment_uniq" tableName="deployments"/>
+
+    <createIndex tableName="deployments" indexName="idx_deployment_environment_name_version">
+      <column name="environment"/>
+      <column name="name"/>
+      <column name="version"/>
+    </createIndex>
+
+  </changeSet>
+
+</databaseChangeLog>
