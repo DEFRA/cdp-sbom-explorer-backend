@@ -15,16 +15,17 @@ export async function persistDependencies(pg, entityId, deps) {
     return { inserted: 0 }
   }
 
-  try {
-    const params = [
-      deps.map((d) => d.type),
-      deps.map((d) => d.name),
-      deps.map((d) => d.version),
-      deps.map((d) => d.versionNum),
-      entityId
-    ]
+  const params = [
+    deps.map((d) => d.type),
+    deps.map((d) => d.name),
+    deps.map((d) => d.version),
+    deps.map((d) => d.versionNum),
+    entityId
+  ]
 
-    await pg.query('BEGIN')
+  const client = await pg.connect()
+  try {
+    await client.query('BEGIN')
 
     const insertSql = `
     WITH input_deps AS (
@@ -55,12 +56,14 @@ export async function persistDependencies(pg, entityId, deps) {
     SELECT $5::bigint, id
     FROM upserted
     ON CONFLICT DO NOTHING`
-    const insertResult = await pg.query(insertSql, params)
-    await pg.query('COMMIT')
+    const insertResult = await client.query(insertSql, params)
+    await client.query('COMMIT')
     return { inserted: insertResult.rowCount }
   } catch (e) {
     logger.error(e)
-    await pg.query('ROLLBACK')
+    await client.query('ROLLBACK')
     throw e
+  } finally {
+    client.release()
   }
 }

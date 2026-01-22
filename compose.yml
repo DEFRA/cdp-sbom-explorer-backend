@@ -1,88 +1,58 @@
 services:
   localstack:
-    image: localstack/localstack:3.0.2
-    ports:
-      - '4566:4566' # LocalStack Gateway
-      - '4510-4559:4510-4559' # external services port range
-    env_file:
-      - 'compose/aws.env'
+    image: localstack/localstack:4.3.0
+    container_name: cdp-infra-localstack
     environment:
-      DEBUG: ${DEBUG:-1}
-      LS_LOG: WARN # Localstack DEBUG Level
-      SERVICES: s3,sqs,sns,firehose
-      LOCALSTACK_HOST: 127.0.0.1
-    volumes:
-      - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
-      - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
+      - LOCALSTACK_HOST=127.0.0.1
+      - SERVICES=s3,sqs,sns,events
+      - LS_LOG=WARN
     healthcheck:
-      test: ['CMD', 'curl', 'localhost:4566']
-      interval: 5s
+      test: ["CMD", "stat", "/tmp/READY"]
+      interval: 3s
       start_period: 5s
-      retries: 3
-    networks:
-      - cdp-tenant
+      retries: 20
+    volumes:
+      - ./compose:/etc/localstack/init/ready.d
 
   postgres:
     image: postgres:14.15-alpine3.20
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
-      POSTGRES_DB: cdp_example_node_postgres_be
+      POSTGRES_DB: cdp_sbom_explorer_backend
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 1s
+      start_period: 3s
+      interval: 2s
       timeout: 5s
       retries: 10
-    networks:
-      - cdp-tenant
     ports:
       - '5432:5432'
     volumes:
       - postgres-data:/data
 
   liquibase:
-    image: liquibase/liquibase:4
-    depends_on:
-      postgres:
-        condition: service_started
-    volumes:
-      - ./changelog:/liquibase/changelog
-    command: --url=jdbc:postgresql://postgres:5432/cdp_example_node_postgres_be --username=postgres --password=postgres --changelog-file=changelog/db.changelog.xml update
-    networks:
-      - cdp-tenant
-    restart: no
-
-  cdp-sbom-explorer-backend:
     build:
       context: .
-      target: development
-    ports:
-      - '3003:3003'
-    links:
-      - 'localstack:localstack'
+      dockerfile_inline: |
+        FROM liquibase/liquibase:latest
+        RUN lpm add postgresql --global
     depends_on:
-      localstack:
+      postgres:
         condition: service_healthy
-      liquibase:
-        condition: service_completed_successfully
-    env_file:
-      - 'compose/aws.env'
     environment:
-      PORT: 3001
-      NODE_ENV: development
-      LOCALSTACK_ENDPOINT: http://localstack:4566
-    networks:
-      - cdp-tenant
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/cdp_sbom_explorer_backend
+      LIQUIBASE_COMMAND_USERNAME: postgres
+      LIQUIBASE_COMMAND_PASSWORD: password
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: db.changelog.xml
+    links:
+      - 'postgres:postgres'
     volumes:
-      - ./src:/home/node/src
-      - ./package.json:/home/node/package.json
+      - ./changelog:/liquibase/changelog
+    command: --log-level=info update
+    restart: no
 
 ################################################################################
-
-networks:
-  cdp-tenant:
-    driver: bridge
-    name: cdp-tenant
 
 volumes:
   postgres-data:

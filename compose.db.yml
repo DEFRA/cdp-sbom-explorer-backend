@@ -1,4 +1,19 @@
 services:
+  localstack:
+    image: localstack/localstack:4.3.0
+    container_name: cdp-infra-localstack
+    environment:
+      - LOCALSTACK_HOST=127.0.0.1
+      - SERVICES=s3,sqs,sns,events
+      - LS_LOG=WARN
+    healthcheck:
+      test: ["CMD", "stat", "/tmp/READY"]
+      interval: 3s
+      start_period: 5s
+      retries: 20
+    volumes:
+      - ./compose:/etc/localstack/init/ready.d
+
   postgres:
     image: postgres:14.15-alpine3.20
     environment:

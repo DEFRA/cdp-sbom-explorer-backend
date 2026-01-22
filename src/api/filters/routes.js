@@ -10,7 +10,7 @@ const filterRoutes = [
   },
   {
     method: 'GET',
-    path: '/filters/dependencies/{name}',
+    path: '/filters/dependencies/{type}/{name}',
     ...dependencyVersionFilterController
   },
   {

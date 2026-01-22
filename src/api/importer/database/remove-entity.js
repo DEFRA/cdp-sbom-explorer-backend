@@ -5,16 +5,19 @@
  * @return {Promise<void>}
  */
 async function removeEntity(pg, entityId) {
-  await pg.query('BEGIN')
+  const client = await pg.connect()
   try {
-    await pg.query('DELETE FROM entity_dependencies WHERE entity_id = $1', [
+    await client.query('BEGIN')
+    await client.query('DELETE FROM entity_dependencies WHERE entity_id = $1', [
       entityId
     ])
-    await pg.query('DELETE FROM entities WHERE id = $1', [entityId])
-    await pg.query('COMMIT')
+    await client.query('DELETE FROM entities WHERE id = $1', [entityId])
+    await client.query('COMMIT')
   } catch (err) {
-    await pg.query('ROLLBACK')
+    await client.query('ROLLBACK')
     throw err
+  } finally {
+    client.release()
   }
 }
 
