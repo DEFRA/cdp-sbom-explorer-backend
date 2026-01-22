@@ -1,51 +1,54 @@
-async function uniqueDependencies(pg) {
-  const result = await pg.query(
-    'SELECT DISTINCT name, type FROM dependencies ORDER BY name'
-  )
-  return result.rows
+const whereName = (idx) => `d.name = $${idx}`
+const whereType = (idx) => `d.type = $${idx}`
+const wherePartialName = (idx) => `d.name LIKE $${idx}`
+
+const whereClauses = {
+  name: whereName,
+  partialName: wherePartialName,
+  type: whereType
 }
 
-async function uniqueDependenciesForType(pg, type) {
-  const result = await pg.query(
-    'SELECT DISTINCT name, type FROM dependencies  WHERE type = $1 ORDER BY name',
-    [type]
-  )
-  return result.rows
-}
+/**
+ * A basic WHERE clause builder to support dynamic queries.
+ * @param {{ name: string, partialName: string, type: string }} query
+ * @return {{sql: string, values: *[]}}
+ */
+function buildUniqueDependencyQuery(query) {
+  const keys = Object.keys(query).filter((q) => whereClauses[q])
+  const where = []
+  const values = []
 
-async function uniqueDependenciesForTypeAndName(pg, type, partialName) {
-  const result = await pg.query(
-    'SELECT DISTINCT name, type FROM dependencies  WHERE type = $1 AND name like $2 ORDER BY name',
-    [type, partialName]
-  )
-  return result.rows
-}
-
-async function uniqueDependenciesForNames(pg, partialName) {
-  const result = await pg.query(
-    'SELECT DISTINCT name, type FROM dependencies  WHERE name LIKE $1 ORDER BY name',
-    [partialName]
-  )
-  return result.rows
-}
-
-async function uniqueDependenciesFiltered(pg, type, name) {
-  const partialName = name ? `${name}%` : undefined
-  if (type) {
-    if (partialName) {
-      return uniqueDependenciesForTypeAndName(pg, type, partialName)
-    } else {
-      return uniqueDependenciesForType(pg, type)
+  for (const key of keys) {
+    if (!whereClauses[key]) {
+      continue
     }
+    where.push(whereClauses[key](where.length + 1))
+    values.push(query[key])
   }
 
-  if (partialName) {
-    return uniqueDependenciesForNames(pg, partialName)
-  }
-
-  return uniqueDependencies(pg, type)
+  const selectSql = 'SELECT DISTINCT name, type FROM dependencies'
+  const whereSql = where ? `WHERE ${where.join(' AND ')}` : ''
+  const sql = `${selectSql} ${whereSql} ORDER BY name`
+  return { sql, values }
 }
 
+/**
+ * Returns a filterable list of unique dependencies.
+ * @param pg
+ * @param {{ name: string, partialName: string, type: string }} query
+ * @return {Promise<*>}
+ */
+async function uniqueDependencies(pg, query) {
+  const { sql, values } = buildUniqueDependencyQuery(query)
+  const result = await pg.query(sql, values)
+  return result.rows
+}
+
+/**
+ * Returns all the distinct entity stages (e.g. run, build, development etc)
+ * @param pg
+ * @return {Promise<string[]>}
+ */
 async function uniqueEntityStages(pg) {
   const result = await pg.query(
     'SELECT DISTINCT stage FROM entities ORDER BY stage'
@@ -53,17 +56,19 @@ async function uniqueEntityStages(pg) {
   return result.rows.map((row) => row.stage)
 }
 
-async function uniqueVersionForDependency(pg, name) {
+/**
+ * Returns a list of unique version numbers of a given dependency
+ * @param pg
+ * @param name
+ * @param type
+ * @return {Promise<string[]>}
+ */
+async function uniqueVersionForDependency(pg, name, type) {
   const result = await pg.query(
-    'SELECT DISTINCT version FROM dependencies WHERE name = $1 ORDER BY version_num',
-    [name]
+    'SELECT DISTINCT version FROM dependencies WHERE name = $1 AND type = $2 ORDER BY version_num',
+    [name, type]
   )
   return result.rows.map((row) => row.version)
 }
 
-export {
-  uniqueEntityStages,
-  uniqueDependencies,
-  uniqueDependenciesFiltered,
-  uniqueVersionForDependency
-}
+export { uniqueEntityStages, uniqueDependencies, uniqueVersionForDependency }
