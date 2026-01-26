@@ -71,7 +71,6 @@ async function findByDependencies(pg, query) {
     )
   }
 
-  console.log(sql, values)
   const result = await pg.query(sql, values)
   return result.rows
 }

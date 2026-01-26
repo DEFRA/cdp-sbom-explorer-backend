@@ -7,7 +7,6 @@ const sqs = {
     name: 'sqs',
     version: '1.0.0',
     register: async function (server, options) {
-      console.log(options)
       const clientConfig = {
         region: options.region
       }
