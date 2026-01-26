@@ -8,8 +8,6 @@ import { s3EventBodySchema } from '../schemas/s3-event-schema.js'
  * @return {Promise<{}>}
  */
 async function bucketEventHandler(server, message) {
-  server.logger.info(message)
-
   const payload = JSON.parse(message.Body)
   const { value, error } = s3EventBodySchema.validate(payload)
   if (error) {

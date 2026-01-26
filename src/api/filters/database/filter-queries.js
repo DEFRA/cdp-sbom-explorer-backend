@@ -65,7 +65,7 @@ async function uniqueEntityStages(pg) {
  */
 async function uniqueVersionForDependency(pg, name, type) {
   const result = await pg.query(
-    'SELECT DISTINCT version FROM dependencies WHERE name = $1 AND type = $2 ORDER BY version_num',
+    'SELECT DISTINCT version, version_num FROM dependencies WHERE name = $1 AND type = $2 ORDER BY version_num',
     [name, type]
   )
   return result.rows.map((row) => row.version)
