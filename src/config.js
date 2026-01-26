@@ -109,6 +109,12 @@ const config = convict({
       env: 'SQS_ENABLED'
     }
   },
+  portalBackendUrl: {
+    doc: 'Portal Backend URL',
+    format: String,
+    default: 'http://localhost:5094',
+    env: 'PORTAL_BACKEND_URL'
+  },
   sbomBucket: {
     doc: 'name of the SBOM S3 bucket',
     format: String,
