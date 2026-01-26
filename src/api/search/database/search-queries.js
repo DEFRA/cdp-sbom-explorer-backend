@@ -19,9 +19,10 @@ const whereClauses = {
 /**
  * A basic WHERE clause builder to support dynamic queries.
  * @param {Object} query
+ * @param {Number|null} limit
  * @return {{sql: string, values: *[]}|undefined}
  */
-export function buildSearchQuery(query) {
+export function buildSearchQuery(query, limit = null) {
   // TODO: maybe use Joi to validate this instead?
   const keys = Object.keys(query).filter((q) => whereClauses[q])
   if (keys.length === 0) {
@@ -53,7 +54,10 @@ export function buildSearchQuery(query) {
     )
   }
 
-  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')}`
+  const limitSql = limit ? ` LIMIT ${limit}` : ''
+  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')}${limitSql}`
+
+  console.log(sql)
   return { sql, values }
 }
 
@@ -64,7 +68,7 @@ export function buildSearchQuery(query) {
  * @return {Promise<{name: string, version: string, stage: string}[]>}
  */
 async function findByDependencies(pg, query) {
-  const { sql, values } = buildSearchQuery(query)
+  const { sql, values } = buildSearchQuery(query, 1000) // TODO: hardcoded limit for now, we should probably paginate
   if (!sql || !values) {
     throw new Error(
       `Invalid query [${Object.keys(query).join(', ')}] can only use [${Object.keys(whereClauses).join(', ')}] `
