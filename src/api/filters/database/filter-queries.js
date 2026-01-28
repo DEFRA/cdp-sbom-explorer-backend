@@ -40,7 +40,6 @@ function buildUniqueDependencyQuery(query) {
  */
 async function uniqueDependencies(pg, query) {
   const { sql, values } = buildUniqueDependencyQuery(query)
-  console.log(sql, values)
   const result = await pg.query(sql, values)
   return result.rows
 }
