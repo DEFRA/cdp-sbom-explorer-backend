@@ -1,8 +1,10 @@
-import { fetchRunningServices } from '../fetch/fetch-running-services.js'
 import { updateDeployments } from '../database/update-deployments.js'
-import { updateLatest } from '../database/update-latest.js'
+import { fetchRunningServices } from '../fetch/portal-backend.js'
 
-const refreshDeploymentsController = {
+/**
+ * Pulls latest deployments from portal backend. This is just for testing/debugging
+ */
+const pullDeploymentsController = {
   options: {},
   handler: async (request, h) => {
     const runningServices = await fetchRunningServices()
@@ -10,12 +12,8 @@ const refreshDeploymentsController = {
     request.logger.info(
       `refreshed deployments ${runningServices.length} received, ${result.inserted} updated`
     )
-
-    const latestResult = await updateLatest(request)
-    request.logger.info(`refreshed latest, ${latestResult.inserted} updated`)
-
     return h.response(result).code(200)
   }
 }
 
-export { refreshDeploymentsController }
+export { pullDeploymentsController }

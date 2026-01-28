@@ -1,5 +1,8 @@
 import { uniqueEntityStages } from '../database/filter-queries.js'
 
+/**
+ * Returns unique stages (run, development, etc).
+ */
 const entityStageFilterController = {
   options: {},
   handler: async (request, h) => {

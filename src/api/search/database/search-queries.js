@@ -55,7 +55,7 @@ export function buildSearchQuery(query, limit = null) {
   }
 
   const limitSql = limit ? ` LIMIT ${limit}` : ''
-  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')}${limitSql}`
+  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')} ORDER BY d.version_num DESC, e.name ASC${limitSql}`
 
   console.log(sql)
   return { sql, values }
@@ -67,7 +67,7 @@ export function buildSearchQuery(query, limit = null) {
  * @param {{name: string|null, version: string|null, lte: string|null, gte: string|null, environment: string|null }} query
  * @return {Promise<{name: string, version: string, stage: string}[]>}
  */
-async function findByDependencies(pg, query) {
+async function searchDependencies(pg, query) {
   const { sql, values } = buildSearchQuery(query, 1000) // TODO: hardcoded limit for now, we should probably paginate
   if (!sql || !values) {
     throw new Error(
@@ -79,4 +79,4 @@ async function findByDependencies(pg, query) {
   return result.rows
 }
 
-export { findByDependencies }
+export { searchDependencies }

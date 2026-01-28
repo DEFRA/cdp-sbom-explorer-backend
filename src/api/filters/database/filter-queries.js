@@ -26,8 +26,8 @@ function buildUniqueDependencyQuery(query) {
     values.push(query[key])
   }
 
-  const selectSql = 'SELECT DISTINCT name, type FROM dependencies'
-  const whereSql = where ? `WHERE ${where.join(' AND ')}` : ''
+  const selectSql = 'SELECT DISTINCT name, type FROM dependencies as d'
+  const whereSql = where.length > 0 ? `WHERE ${where.join(' AND ')}` : ''
   const sql = `${selectSql} ${whereSql} ORDER BY name`
   return { sql, values }
 }
@@ -40,8 +40,22 @@ function buildUniqueDependencyQuery(query) {
  */
 async function uniqueDependencies(pg, query) {
   const { sql, values } = buildUniqueDependencyQuery(query)
+  console.log(sql, values)
   const result = await pg.query(sql, values)
   return result.rows
+}
+
+/**
+ * Returns a filterable list of unique dependencies.
+ * @param pg
+ * @param {{ name: string, partialName: string, type: string }} query
+ * @return {Promise<*>}
+ */
+async function uniqueDependencyTypes(pg) {
+  const result = await pg.query(
+    'SELECT DISTINCT type FROM dependencies ORDER BY type'
+  )
+  return result.rows.map((row) => row.type)
 }
 
 /**
@@ -71,4 +85,9 @@ async function uniqueVersionForDependency(pg, name, type) {
   return result.rows.map((row) => row.version)
 }
 
-export { uniqueEntityStages, uniqueDependencies, uniqueVersionForDependency }
+export {
+  uniqueEntityStages,
+  uniqueDependencies,
+  uniqueVersionForDependency,
+  uniqueDependencyTypes
+}

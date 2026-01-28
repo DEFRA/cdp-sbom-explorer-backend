@@ -19,6 +19,13 @@ const sqs = {
       }
       server.decorate('server', 'sqsClient', sqsClient)
       server.decorate('request', 'sqsClient', sqsClient)
+
+      server.events.on('stop', () => {
+        if (sqsClient) {
+          server.logger.info('Closing SQS client')
+          sqsClient.destroy()
+        }
+      })
     }
   }
 }
