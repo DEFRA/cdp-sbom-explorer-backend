@@ -53,11 +53,8 @@ export function buildSearchQuery(query, limit = null) {
       'JOIN deployments as dpl ON dpl.name = e.name AND dpl.version = e.version'
     )
   }
-
   const limitSql = limit ? ` LIMIT ${limit}` : ''
   const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')} ORDER BY d.version_num DESC, e.name ASC${limitSql}`
-
-  console.log(sql)
   return { sql, values }
 }
 
