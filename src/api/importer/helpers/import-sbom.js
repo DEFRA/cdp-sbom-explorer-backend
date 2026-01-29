@@ -8,8 +8,8 @@ import { removeEntity } from '../database/remove-entity.js'
 import { sourceFromPath } from './source-from-path.js'
 import { downloadAndDecompress } from './download-and-decompress.js'
 
-const namesToIgnore = new Set([])
-const versionsToIgnore = new Set(['latest'])
+const namesToIgnore = new Set(['cdp-squid-proxy', 'cdp-nginx-proxy'])
+const versionsToIgnore = new Set(['latest', 'stable'])
 
 const componentTypesToIgnore = new Set(['file'])
 
