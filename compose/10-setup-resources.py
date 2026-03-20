@@ -208,7 +208,7 @@ def main() -> None:
 
     try:
         LOGGER.info(
-            "Summary | queues=%s topics=%s buckets=%s tables=%s",
+            "Summary | queues=%s topics=%s buckets=%s",
             len(sqs_client.list_queues().get("QueueUrls", [])),
             len(sns_client.list_topics().get("Topics", [])),
             len(s3_client.list_buckets().get("Buckets", [])),
