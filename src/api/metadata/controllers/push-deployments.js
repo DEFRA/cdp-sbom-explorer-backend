@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 
 import { deploymentsForEnvSchema } from '../schemas/deployments-for-env-schema.js'
-import { updateDeploymentEnvironment } from '../database/update-deployment-environment.js'
+import { bulkUpdateTags } from '../database/manage-tags.js'
 
 /**
  * Receives per-environment deployment updates pushed from an external source.
@@ -19,12 +19,20 @@ const pushDeploymentsController = {
     const environment = payload.environment
     const deployments = payload.versions
 
-    const result = await updateDeploymentEnvironment(
+    const result = await bulkUpdateTags(
       request,
-      environment,
-      deployments
+      deployments.map(
+        (d) => ({ name: d.name, version: d.version, value: environment }),
+        true
+      )
     )
-    return h.response(result).code(200)
+    return h
+      .response({
+        environment,
+        deploymentsProvided: deployments.length,
+        result
+      })
+      .code(200)
   }
 }
 

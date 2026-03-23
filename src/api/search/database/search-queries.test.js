@@ -7,9 +7,6 @@ describe('#search-queries', () => {
 
     const endSql = 'ORDER BY d.version_num DESC, e.name ASC'
 
-    const deploymentsJoin =
-      'JOIN deployments as dpl ON dpl.name = e.name AND dpl.version = e.version'
-
     test('name', () => {
       const query = buildSearchQuery({ name: 'bar' })
       expect(query.sql).toEqual(`${baseSql} WHERE d.name = $1 ${endSql}`)
@@ -53,7 +50,7 @@ describe('#search-queries', () => {
     test('environment', () => {
       const query = buildSearchQuery({ environment: 'dev' })
       expect(query.sql).toEqual(
-        `${baseSql} ${deploymentsJoin} WHERE dpl.environment = $1 ${endSql}`
+        `${baseSql} WHERE EXISTS (SELECT 1 FROM tags t WHERE t.entity_name = e.name AND t.entity_version = e.version AND t.value = $1) ${endSql}`
       )
       expect(query.values).toEqual(['dev'])
     })
@@ -94,7 +91,7 @@ describe('#search-queries', () => {
         environment: 'dev'
       })
       expect(query.sql).toEqual(
-        `${baseSql} ${deploymentsJoin} WHERE d.name = $1 AND d.version_num >= $2 AND d.version_num <= $3 AND dpl.environment = $4 ${endSql}`
+        `${baseSql} WHERE d.name = $1 AND d.version_num >= $2 AND d.version_num <= $3 AND EXISTS (SELECT 1 FROM tags t WHERE t.entity_name = e.name AND t.entity_version = e.version AND t.value = $4) ${endSql}`
       )
       expect(query.values).toEqual(['bar', 10, 20, 'dev'])
     })

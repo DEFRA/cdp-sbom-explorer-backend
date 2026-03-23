@@ -1,6 +1,10 @@
 import { config } from '../../../config.js'
 import { fetch } from 'undici'
 
+/**
+ *
+ * @return {Promise<{service: string, version: string, environment:string}[]>}
+ */
 async function fetchRunningServices() {
   const baseUrl = config.get('portalBackendUrl')
 

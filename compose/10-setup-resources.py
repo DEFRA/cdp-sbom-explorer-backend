@@ -20,7 +20,7 @@ def ensure_queue(sqs_client, name: str, attributes: Dict[str, str] | None = None
     attributes = attributes or {}
     try:
         queue_url = sqs_client.create_queue(QueueName=name, Attributes=attributes)["QueueUrl"]
-        LOGGER.info("Created queue %s", name)
+        LOGGER.info("Created queue %s, %s", name, queue_url)
     except ClientError as exc:
         if exc.response["Error"]["Code"] != "QueueAlreadyExists":
             raise
@@ -74,54 +74,6 @@ def ensure_bucket(s3_client, name: str, region: str) -> None:
         LOGGER.info("Bucket %s already exists", name)
 
 
-def ensure_secret(secrets_client) -> None:
-    try:
-        secrets_client.create_secret(
-            Name="cdp/notify/backend/integration-keys/Platform",
-            SecretString="abc123def456ghi789jkl012mno345pq",
-        )
-        LOGGER.info("Created notify backend secret")
-    except ClientError as exc:
-        if exc.response["Error"]["Code"] != "ResourceExistsException":
-            raise
-        LOGGER.info("Notify backend secret already exists")
-
-
-def ensure_session_table(dynamodb_client) -> None:
-    table_name = "cdp-portal-frontend-session"
-    try:
-        dynamodb_client.describe_table(TableName=table_name)
-        LOGGER.info("Table %s already exists", table_name)
-    except ClientError as exc:
-        if exc.response["Error"]["Code"] != "ResourceNotFoundException":
-            raise
-        dynamodb_client.create_table(
-            TableName=table_name,
-            AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
-            KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
-            ProvisionedThroughput={"ReadCapacityUnits": 1, "WriteCapacityUnits": 1},
-        )
-        LOGGER.info("Creating table %s", table_name)
-        try:
-            dynamodb_client.get_waiter("table_exists").wait(
-                TableName=table_name,
-                WaiterConfig={"Delay": 1, "MaxAttempts": 20},
-            )
-        except WaiterError:
-            LOGGER.warning("Timed out waiting for table %s to become active; continuing", table_name)
-
-    try:
-        dynamodb_client.update_time_to_live(
-            TableName=table_name,
-            TimeToLiveSpecification={"Enabled": True, "AttributeName": "expiresAt"},
-        )
-        LOGGER.info("Ensured TTL is enabled on %s", table_name)
-    except ClientError as exc:
-        if exc.response["Error"]["Code"] not in {"ResourceInUseException", "ValidationException"}:
-            raise
-        LOGGER.info("TTL already configured for %s", table_name)
-
-
 def configure_bucket_notifications(s3_client, bucket: str, queue_arn: str) -> None:
     s3_client.put_bucket_notification_configuration(
         Bucket=bucket,
@@ -157,8 +109,6 @@ def main() -> None:
     sqs_client = session.client("sqs", endpoint_url=endpoint)
     sns_client = session.client("sns", endpoint_url=endpoint)
     s3_client = session.client("s3", endpoint_url=endpoint)
-    dynamodb_client = session.client("dynamodb", endpoint_url=endpoint)
-    secrets_client = session.client("secretsmanager", endpoint_url=endpoint)
 
     queue_definitions: Dict[str, Dict[str, str]] = {
         "sbom-bucket-events": {},

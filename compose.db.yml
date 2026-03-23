@@ -8,14 +8,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: cdp_sbom_explorer_backend
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 1s
+      test: [ "CMD-SHELL", "/usr/local/bin/pg_isready", "-U", "postgres" ]
+      start_period: 3s
+      interval: 2s
       timeout: 5s
       retries: 10
     ports:
       - '5432:5432'
-    volumes:
-      - postgres-data:/data
+    #volumes:
+    #  - postgres-data:/data
 
   liquibase:
     build:
@@ -35,7 +36,7 @@ services:
       - 'postgres:postgres'
     volumes:
       - ./changelog:/liquibase/changelog
-    command: --log-level=info --context-filter=dev update
+    command: --log-level=info update
     restart: no
 
 ################################################################################

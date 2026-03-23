@@ -1,0 +1,50 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+
+  <changeSet id="1. create-tags" author="Chris Turner">
+    <createTable tableName="tags">
+      <column name="entity_name" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="entity_version" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="value" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+
+    <addPrimaryKey tableName="tags"
+                   columnNames="entity_name, entity_version, value"
+                   constraintName="pk_tags"/>
+
+    <addUniqueConstraint columnNames="entity_name, value" constraintName="tag_unique_by_name_value" tableName="tags"/>
+
+    <createIndex tableName="tags" indexName="idx_tag_value">
+      <column name="value"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="2. create-labels" author="Chris Turner">
+    <createTable tableName="labels">
+      <column name="entity_name" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="key" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="value" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addPrimaryKey tableName="labels"
+                   columnNames="entity_name, key, value"
+                   constraintName="pk_labels"/>
+
+    <addUniqueConstraint columnNames="entity_name, key, value" constraintName="label_unique_by_name_key_value" tableName="labels"/>
+
+  </changeSet>
+
+</databaseChangeLog>
