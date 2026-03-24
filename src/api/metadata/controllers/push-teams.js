@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 
-import { teamsUpdateSchema } from '../schemas/deployments-for-env-schema.js'
-import { bulkUpdateLabel } from '../database/manage-labels.js'
+import { teamsUpdateSchema } from '../schemas/schemas.js'
+import { bulkUpdateLabels } from '../database/manage-labels.js'
 
 /**
  * Receives service ownership info from portal
@@ -22,7 +22,7 @@ export const pushTeamsController = {
       p.teams.map((t) => ({ name: p.name, value: t }))
     )
 
-    const result = await bulkUpdateLabel(request, 'team', teamLabels, true)
+    const result = await bulkUpdateLabels(request, 'team', teamLabels, true)
     return h.response({ teamsProvided: teamLabels.length, result }).code(200)
   }
 }

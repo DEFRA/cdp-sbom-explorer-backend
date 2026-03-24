@@ -33,7 +33,7 @@ export async function updateLabel({ pg, logger }, update) {
  * @param {boolean} clearExisting - Deletes all existing keys that match
  * @return {Promise<Number>}
  */
-export async function bulkUpdateLabel(
+export async function bulkUpdateLabels(
   { pg, logger },
   labelKey,
   labels,

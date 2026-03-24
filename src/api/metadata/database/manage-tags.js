@@ -1,7 +1,7 @@
 /**
  * Inserts a new entity record, returning the id field.
  * @param { import('pg-pool').Pool } client
- * @param {{name, version, stage, value}} update
+ * @param {{name, version, value}} update
  */
 export async function updateTags(client, update) {
   const upsertSql = `
@@ -13,7 +13,6 @@ export async function updateTags(client, update) {
   const result = await client.query(upsertSql, [
     update.name,
     update.version,
-    update.stage,
     update.value
   ])
   return Number(result.rows[0]?.id)
@@ -22,7 +21,7 @@ export async function updateTags(client, update) {
 /**
  * @param { import('pg-pool').Pool } pg
  * @param { import('pino').Pino } logger
- * @param {{name, version, stage, value}[]} tags - Array of { name, version, value }
+ * @param {{name, version, value}[]} tags - Array of { name, version, value }
  * @param {boolean} clearExisting
  * @return {Promise<Number>}
  */
@@ -52,7 +51,7 @@ export async function bulkUpdateTags(
     if (clearExisting) {
       const distinctTags = [...new Set(values)]
       logger.info(`clearing tags: ${distinctTags.join(' ')}`)
-      await client.query('DELETE FROM tags WHERE key = ANY($1::text[])', [
+      await client.query('DELETE FROM tags WHERE value = ANY($1::text[])', [
         distinctTags
       ])
     }

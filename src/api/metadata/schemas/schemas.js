@@ -5,7 +5,7 @@ const entityVersion = Joi.object({
   version: Joi.string().required()
 })
 
-export const deploymentsForEnvSchema = Joi.object({
+export const schemas = Joi.object({
   environment: Joi.string().required(),
   versions: Joi.array().items(entityVersion).required()
 })

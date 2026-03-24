@@ -1,6 +1,6 @@
 import Boom from '@hapi/boom'
 
-import { deploymentsForEnvSchema } from '../schemas/deployments-for-env-schema.js'
+import { schemas } from '../schemas/schemas.js'
 import { bulkUpdateTags } from '../database/manage-tags.js'
 
 /**
@@ -10,7 +10,7 @@ import { bulkUpdateTags } from '../database/manage-tags.js'
 const pushDeploymentsController = {
   options: {
     validate: {
-      payload: deploymentsForEnvSchema,
+      payload: schemas,
       failAction: () => Boom.boomify(Boom.badRequest())
     }
   },
