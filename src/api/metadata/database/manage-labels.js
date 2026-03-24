@@ -7,8 +7,7 @@ export async function updateLabel({ pg, logger }, update) {
   const upsertSql = `
     INSERT INTO labels (entity_name, key, value)
     VALUES ($1, $2, $3)
-    ON CONFLICT (entity_name, key) DO UPDATE
-      SET value = EXCLUDED.value`
+    ON CONFLICT (entity_name, key, value) DO NOTHING`
 
   const client = await pg.connect()
   try {
@@ -17,7 +16,7 @@ export async function updateLabel({ pg, logger }, update) {
       update.key,
       update.value
     ])
-    return Number(result.rows[0]?.id)
+    return Number(result.rowCount)
   } catch (e) {
     logger.error(e)
     throw e

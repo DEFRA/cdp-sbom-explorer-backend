@@ -7,12 +7,12 @@ const entityVersion = Joi.object({
 
 export const schemas = Joi.object({
   environment: Joi.string().required(),
-  versions: Joi.array().items(entityVersion).required()
+  versions: Joi.array().items(entityVersion).min(1).required()
 })
 
 export const teamUpdateSchema = Joi.object({
   name: Joi.string().required(),
-  teams: Joi.array().items(Joi.string()).required()
+  teams: Joi.array().items(Joi.string()).min(1).required()
 })
 
 export const teamsUpdateSchema = Joi.array().items(teamUpdateSchema)
