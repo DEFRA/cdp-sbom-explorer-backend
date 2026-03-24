@@ -21,10 +21,12 @@ const pushDeploymentsController = {
 
     const result = await bulkUpdateTags(
       request,
-      deployments.map(
-        (d) => ({ name: d.name, version: d.version, value: environment }),
-        true
-      )
+      deployments.map((d) => ({
+        name: d.name,
+        version: d.version,
+        value: environment
+      })),
+      true
     )
     return h
       .response({

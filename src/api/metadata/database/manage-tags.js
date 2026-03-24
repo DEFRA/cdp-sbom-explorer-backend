@@ -15,7 +15,7 @@ export async function updateTags(client, update) {
     update.version,
     update.value
   ])
-  return Number(result.rows[0]?.id)
+  return Number(result.rowCount)
 }
 
 /**
@@ -58,7 +58,7 @@ export async function bulkUpdateTags(
 
     const result = await client.query(query, [names, versions, values])
     await client.query('COMMIT')
-    return Number(result.rows[0]?.id)
+    return Number(result.rowCount)
   } catch (e) {
     logger.error(e)
     await client.query('ROLLBACK')
