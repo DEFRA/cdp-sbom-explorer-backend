@@ -1,7 +1,7 @@
 services:
   localstack:
     image: localstack/localstack:4.3.0
-    container_name: cdp-infra-localstack
+    container_name: cdp-sbom-explorer-localstack
     environment:
       - LOCALSTACK_HOST=127.0.0.1
       - SERVICES=s3,sqs,sns,events
@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: cdp_sbom_explorer_backend
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "/usr/local/bin/pg_isready", "-U", "postgres" ]
       start_period: 3s
       interval: 2s
       timeout: 5s

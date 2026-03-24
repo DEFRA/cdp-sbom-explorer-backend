@@ -16,6 +16,8 @@ const dependencySearchController = {
         type: Joi.string().trim().min(1),
         gte: Joi.string().trim().min(1),
         lte: Joi.string().trim().min(1),
+        team: Joi.string().trim().min(1),
+        stage: Joi.string().trim().min(1),
         environment: Joi.string().trim().min(1)
       })
     }

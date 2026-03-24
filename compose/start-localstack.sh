@@ -9,3 +9,4 @@ export AWS_SECRET_ACCESS_KEY=test
 
 # SQS queues
 # aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name my-queue
+python /etc/localstack/init/ready.d/10-setup-resources.py

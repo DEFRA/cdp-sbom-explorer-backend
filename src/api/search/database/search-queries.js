@@ -2,10 +2,13 @@ const whereDepName = (idx) => `d.name = $${idx}`
 const whereDepVersion = (idx) => `d.version = $${idx}`
 const whereDepVersionGte = (idx) => `d.version_num >= $${idx}`
 const whereDepVersionLte = (idx) => `d.version_num <= $${idx}`
-const whereEnvironment = (idx) => `dpl.environment = $${idx}`
 const whereType = (idx) => `d.type = $${idx}`
 const whereStage = (idx) => `e.stage = $${idx}`
 
+const whereEnvironment = (idx) =>
+  `EXISTS (SELECT 1 FROM tags t WHERE t.entity_name = e.name AND t.entity_version = e.version AND t.value = $${idx})`
+const whereTeam = (idx) =>
+  `EXISTS (SELECT 1 FROM labels l WHERE l.entity_name = e.name AND l.key = 'team' AND l.value = $${idx})`
 const whereClauses = {
   name: whereDepName,
   version: whereDepVersion,
@@ -13,7 +16,8 @@ const whereClauses = {
   lte: whereDepVersionLte,
   environment: whereEnvironment,
   type: whereType,
-  stage: whereStage
+  stage: whereStage,
+  team: whereTeam
 }
 
 /**
@@ -42,17 +46,12 @@ export function buildSearchQuery(query, limit = null) {
 
   const select =
     'SELECT e.name, e.version, e.stage, d.version as depversion, d.type as deptype FROM entity_dependencies as ed'
+
   const joins = [
     'JOIN entities as e ON e.id = ed.entity_id',
     'JOIN dependencies as d ON d.id = ed.dependency_id'
   ]
 
-  // We only need to join deployments if we're filtering by environment
-  if (query.environment) {
-    joins.push(
-      'JOIN deployments as dpl ON dpl.name = e.name AND dpl.version = e.version'
-    )
-  }
   const limitSql = limit ? ` LIMIT ${limit}` : ''
   const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')} ORDER BY d.version_num DESC, e.name ASC${limitSql}`
   return { sql, values }
@@ -61,7 +60,7 @@ export function buildSearchQuery(query, limit = null) {
 /**
  *
  * @param { import('pg-pool').Pool } pg
- * @param {{name: string|null, version: string|null, lte: string|null, gte: string|null, environment: string|null }} query
+ * @param {{name: string?, version: string?, lte: string?, gte: string?, environment: string?, team:string? }} query
  * @return {Promise<{name: string, version: string, stage: string}[]>}
  */
 async function searchDependencies(pg, query) {
