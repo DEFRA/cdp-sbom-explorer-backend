@@ -55,11 +55,16 @@ export function buildSearchQuery(query, limit = null) {
   }
 
   const sql = `
-    SELECT e.name, e.version, d.version as depversion, array_remove(array_agg(dpl.environment::TEXT), NULL) as environments
-    FROM entity_dependencies as ed
-    JOIN entities as e ON e.id = ed.entity_id
-    JOIN dependencies as d ON d.id = ed.dependency_id
-    LEFT JOIN deployments as dpl ON dpl.name = e.name AND dpl.version = e.version
+    SELECT e.name, e.version, d.version AS depversion,
+          array_remove(array_agg(dpl.environment::TEXT), NULL) AS environments,
+          array_remove(array_agg(lb.key::TEXT), NULL) AS labels,
+          array_remove(array_agg(tg.value::TEXT), NULL) AS tags
+          FROM entity_dependencies AS ed
+          JOIN entities AS e ON e.id = ed.entity_id
+          JOIN dependencies AS d ON d.id = ed.dependency_id
+          LEFT JOIN deployments AS dpl ON dpl.name = e.name AND dpl.version = e.version
+          LEFT JOIN labels AS lb ON lb.entity_name = e.name
+          LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version
     WHERE ${where.join(' AND ')}
     GROUP BY e.name, e.version, d.version
     ORDER BY e.name ASC, e.version DESC
