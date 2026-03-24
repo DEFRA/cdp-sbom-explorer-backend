@@ -19,7 +19,7 @@ const whereClauses = {
  * @return {Promise<{name: string, version: string, stage: string}[]>}
  */
 export async function listDependents(pg, query) {
-  const { sql, values } = buildSearchQuery(query, 1000) // TODO: hardcoded limit for now, we should paginate
+  const { sql, values } = buildSearchQuery(query, 100) // TODO: hardcoded limit for now, we should paginate
   if (!sql || !values) {
     throw new Error(
       `Invalid query [${Object.keys(query).join(', ')}] can only use [${Object.keys(whereClauses).join(', ')}] `
@@ -56,15 +56,15 @@ export function buildSearchQuery(query, limit = null) {
 
   const sql = `
     SELECT e.name, e.version, d.version AS depversion,
-          array_remove(array_agg(dpl.environment::TEXT), NULL) AS environments,
-          array_remove(array_agg(lb.key::TEXT), NULL) AS labels,
-          array_remove(array_agg(tg.value::TEXT), NULL) AS tags
-          FROM entity_dependencies AS ed
-          JOIN entities AS e ON e.id = ed.entity_id
-          JOIN dependencies AS d ON d.id = ed.dependency_id
-          LEFT JOIN deployments AS dpl ON dpl.name = e.name AND dpl.version = e.version
-          LEFT JOIN labels AS lb ON lb.entity_name = e.name
-          LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version
+          array_remove(array_agg(DISTINCT dpl.environment::TEXT), NULL) AS environments,
+          array_remove(array_agg(DISTINCT teams.value::TEXT), NULL) AS teams,
+          array_remove(array_agg(DISTINCT tg.value::TEXT), NULL) AS tags
+    FROM entity_dependencies AS ed
+    JOIN entities AS e ON e.id = ed.entity_id
+    JOIN dependencies AS d ON d.id = ed.dependency_id
+    LEFT JOIN deployments AS dpl ON dpl.name = e.name AND dpl.version = e.version
+    LEFT JOIN labels AS teams ON teams.entity_name = e.name AND teams.key = 'team'
+    LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version
     WHERE ${where.join(' AND ')}
     GROUP BY e.name, e.version, d.version
     ORDER BY e.name ASC, e.version DESC
