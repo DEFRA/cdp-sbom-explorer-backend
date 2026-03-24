@@ -54,20 +54,17 @@ export function buildSearchQuery(query, limit = null) {
     values.push(query[key])
   }
 
-  const select =
-    'SELECT e.name, e.version, e.stage, d.version as depversion, d.type as deptype FROM entity_dependencies as ed'
-  const joins = [
-    'JOIN entities as e ON e.id = ed.entity_id',
-    'JOIN dependencies as d ON d.id = ed.dependency_id'
-  ]
+  const sql = `
+    SELECT e.name, e.version, d.version as depversion, array_remove(array_agg(dpl.environment::TEXT), NULL) as environments
+    FROM entity_dependencies as ed
+    JOIN entities as e ON e.id = ed.entity_id
+    JOIN dependencies as d ON d.id = ed.dependency_id
+    LEFT JOIN deployments as dpl ON dpl.name = e.name AND dpl.version = e.version
+    WHERE ${where.join(' AND ')}
+    GROUP BY e.name, e.version, d.version
+    ORDER BY e.name ASC, e.version DESC
+    LIMIT ${limit}
+  `
 
-  // We only need to join deployments if we're filtering by environment
-  if (query.environment) {
-    joins.push(
-      'JOIN deployments as dpl ON dpl.name = e.name AND dpl.version = e.version'
-    )
-  }
-  const limitSql = limit ? ` LIMIT ${limit}` : ''
-  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')} ORDER BY d.version_num DESC, e.name ASC${limitSql}`
   return { sql, values }
 }
