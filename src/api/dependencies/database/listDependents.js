@@ -12,46 +12,22 @@ const whereClauses = {
   type: whereType
 }
 
-/**
- *
- * @param { import('pg-pool').Pool } pg
- * @param {{name: string|null, type: string|null, lte: string|null, gte: string|null, environment: string|null }} query
- * @return {Promise<{name: string, version: string, stage: string}[]>}
- */
-export async function listDependents(pg, query) {
-  const { sql, values } = buildSearchQuery(query, 100) // TODO: hardcoded limit for now, we should paginate
-  if (!sql || !values) {
+export async function listDependents(pg, query, limit = 100) {
+  const keys = Object.keys(query).filter((q) => whereClauses[q])
+  if (keys.length === 0) {
     throw new Error(
       `Invalid query [${Object.keys(query).join(', ')}] can only use [${Object.keys(whereClauses).join(', ')}] `
     )
-  }
-
-  const result = await pg.query(sql, values)
-  return result.rows
-}
-
-/**
- * A basic WHERE clause builder to support dynamic queries.
- * @param {Object} query
- * @param {Number|null} limit
- * @return {{sql: string, values: *[]}|undefined}
- */
-export function buildSearchQuery(query, limit = null) {
-  // TODO: maybe use Joi to validate this instead?
-  const keys = Object.keys(query).filter((q) => whereClauses[q])
-  if (keys.length === 0) {
-    return undefined
   }
 
   const where = []
   const values = []
 
   for (const key of keys) {
-    if (!whereClauses[key]) {
-      continue
+    if (whereClauses[key]) {
+      where.push(whereClauses[key](where.length + 1))
+      values.push(query[key])
     }
-    where.push(whereClauses[key](where.length + 1))
-    values.push(query[key])
   }
 
   const sql = `
@@ -71,5 +47,6 @@ export function buildSearchQuery(query, limit = null) {
     LIMIT ${limit}
   `
 
-  return { sql, values }
+  const result = await pg.query(sql, values)
+  return result.rows
 }
