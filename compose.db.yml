@@ -1,6 +1,4 @@
 services:
-
-
   postgres:
     image: postgres:14.15-alpine3.20
     environment:
@@ -8,7 +6,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: cdp_sbom_explorer_backend
     healthcheck:
-      test: [ "CMD-SHELL", "/usr/local/bin/pg_isready", "-U", "postgres" ]
+      test: ['CMD-SHELL', '/usr/local/bin/pg_isready', '-U', 'postgres']
       start_period: 3s
       interval: 2s
       timeout: 5s
