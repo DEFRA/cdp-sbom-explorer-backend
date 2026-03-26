@@ -10,9 +10,11 @@ export default {
         name: Joi.string().trim().required()
       }),
       query: Joi.object({
-        gte: Joi.string().trim(),
-        lte: Joi.string().trim(),
-        environment: Joi.string().trim()
+        gteVersion: Joi.string().trim(),
+        lteVersion: Joi.string().trim(),
+        environment: Joi.string().trim(),
+        team: Joi.string().trim(),
+        tag: Joi.string().trim()
       })
     }
   },
@@ -22,12 +24,12 @@ export default {
       ...request.params
     }
 
-    if (searchQuery.gte) {
-      searchQuery.gte = semverToBigint(searchQuery.gte)
+    if (searchQuery.gteVersion) {
+      searchQuery.gteVersion = semverToBigint(searchQuery.gteVersion)
     }
 
-    if (searchQuery.lte) {
-      searchQuery.lte = semverToBigint(searchQuery.lte)
+    if (searchQuery.lteVersion) {
+      searchQuery.lteVersion = semverToBigint(searchQuery.lteVersion)
     }
 
     const matches = await listDependents(request.pg, searchQuery)

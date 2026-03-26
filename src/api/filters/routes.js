@@ -2,6 +2,7 @@ import { dependencyFilterController } from './controllers/dependency-filter-cont
 import { entityStageFilterController } from './controllers/entity-stage-filter-controller.js'
 import { dependencyVersionFilterController } from './controllers/dependency-version-filter-controller.js'
 import { dependencyTypeFilterController } from './controllers/dependency-type-filter.js'
+import { entityTagFilterController } from './controllers/entity-tag-filter-controller.js'
 
 const filterRoutes = [
   {
@@ -23,6 +24,11 @@ const filterRoutes = [
     method: 'GET',
     path: '/filters/entity-stage',
     ...entityStageFilterController
+  },
+  {
+    method: 'GET',
+    path: '/filters/tags',
+    ...entityTagFilterController
   }
 ]
 

@@ -4,6 +4,7 @@ import { searchRoutes } from '../api/search/routes.js'
 import { importerRoutes } from '../api/importer/routes.js'
 import { metadataRoutes } from '../api/metadata/routes.js'
 import dependenciesRoutes from '../api/dependencies/routes.js'
+import entitiesRoutes from '../api/entities/routes.js'
 
 const router = {
   plugin: {
@@ -15,6 +16,7 @@ const router = {
       server.route(importerRoutes)
       server.route(metadataRoutes)
       server.route(dependenciesRoutes)
+      server.route(entitiesRoutes)
     }
   }
 }
