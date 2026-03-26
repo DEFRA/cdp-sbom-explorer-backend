@@ -1,14 +1,14 @@
-import { semverToBigint } from '../../importer/helpers/semver-to-bigint.js'
 import Joi from 'joi'
-import { listDependents } from '../database/listDependents.js'
+import { listDependencies } from '../database/listDependents.js'
 
 export default {
   options: {
     validate: {
       params: Joi.object({
-        name: Joi.string().trim().required()
+        entityName: Joi.string().trim().required()
       }),
       query: Joi.object({
+        entityVersion: Joi.string().trim(),
         version: Joi.string().trim(),
         type: Joi.string().trim()
       })
@@ -20,15 +20,7 @@ export default {
       ...request.params
     }
 
-    if (searchQuery.gteVersion) {
-      searchQuery.gteVersion = semverToBigint(searchQuery.gteVersion)
-    }
-
-    if (searchQuery.lteVersion) {
-      searchQuery.lteVersion = semverToBigint(searchQuery.lteVersion)
-    }
-
-    const matches = await listDependents(request.pg, searchQuery)
+    const matches = await listDependencies(request.pg, searchQuery)
     return h.response(matches).code(200)
   }
 }
