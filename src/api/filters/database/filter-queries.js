@@ -38,7 +38,7 @@ function buildUniqueDependencyQuery(query) {
  * @param {{ name: string, partialName: string, type: string }} query
  * @return {Promise<*>}
  */
-async function uniqueDependencies(pg, query) {
+export async function uniqueDependencies(pg, query) {
   const { sql, values } = buildUniqueDependencyQuery(query)
   const result = await pg.query(sql, values)
   return result.rows
@@ -50,7 +50,7 @@ async function uniqueDependencies(pg, query) {
  * @param {{ name: string, partialName: string, type: string }} query
  * @return {Promise<*>}
  */
-async function uniqueDependencyTypes(pg) {
+export async function uniqueDependencyTypes(pg) {
   const result = await pg.query(
     'SELECT DISTINCT type FROM dependencies ORDER BY type'
   )
@@ -62,7 +62,7 @@ async function uniqueDependencyTypes(pg) {
  * @param pg
  * @return {Promise<string[]>}
  */
-async function uniqueEntityStages(pg) {
+export async function uniqueEntityStages(pg) {
   const result = await pg.query(
     'SELECT DISTINCT stage FROM entities ORDER BY stage'
   )
@@ -76,7 +76,7 @@ async function uniqueEntityStages(pg) {
  * @param type
  * @return {Promise<string[]>}
  */
-async function uniqueVersionForDependency(pg, name, type) {
+export async function uniqueVersionForDependency(pg, name, type) {
   const result = await pg.query(
     'SELECT DISTINCT version, version_num FROM dependencies WHERE name = $1 AND type = $2 ORDER BY version_num',
     [name, type]
@@ -84,9 +84,14 @@ async function uniqueVersionForDependency(pg, name, type) {
   return result.rows.map((row) => row.version)
 }
 
-export {
-  uniqueEntityStages,
-  uniqueDependencies,
-  uniqueVersionForDependency,
-  uniqueDependencyTypes
+/**
+ * Returns all the distinct entity tags (e.g. latest etc)
+ * @param pg
+ * @return {Promise<string[]>}
+ */
+export async function uniqueEntityTags(pg) {
+  const result = await pg.query(
+    'SELECT DISTINCT value FROM tags ORDER BY value'
+  )
+  return result.rows.map((row) => row.value)
 }
