@@ -1,15 +1,11 @@
-const whereDepName = (idx) => `d.name = $${idx}`
-const whereDepVersionGte = (idx) => `d.version_num >= $${idx}`
-const whereDepVersionLte = (idx) => `d.version_num <= $${idx}`
-const whereEnvironment = (idx) => `dpl.environment = $${idx}`
-const whereType = (idx) => `d.type = $${idx}`
-
 const whereClauses = {
-  name: whereDepName,
-  gte: whereDepVersionGte,
-  lte: whereDepVersionLte,
-  environment: whereEnvironment,
-  type: whereType
+  name: (idx) => `d.name = $${idx}`,
+  type: (idx) => `d.type = $${idx}`,
+  gteVersion: (idx) => `d.version_num >= $${idx}`,
+  lteVersion: (idx) => `d.version_num <= $${idx}`,
+  environment: (idx) => `dpl.environment = $${idx}`,
+  team: (idx) => `teams.value = $${idx}`,
+  tag: (idx) => `tg.value = $${idx}`
 }
 
 export async function listDependents(pg, query, limit = 100) {
