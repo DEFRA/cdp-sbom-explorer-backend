@@ -12,7 +12,7 @@ export const schemas = Joi.object({
 
 export const teamUpdateSchema = Joi.object({
   name: Joi.string().required(),
-  teams: Joi.array().items(Joi.string()).min(1).required()
+  teams: Joi.array().items(Joi.string()).required()
 })
 
 export const teamsUpdateSchema = Joi.array().items(teamUpdateSchema)
