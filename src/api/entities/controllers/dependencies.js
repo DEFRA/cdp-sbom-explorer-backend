@@ -10,7 +10,8 @@ export default {
       query: Joi.object({
         entityVersion: Joi.string().trim(),
         version: Joi.string().trim(),
-        type: Joi.string().trim()
+        type: Joi.string().trim(),
+        name: Joi.string().trim()
       })
     }
   },

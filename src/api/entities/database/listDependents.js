@@ -2,7 +2,8 @@ const whereClauses = {
   entityName: (idx) => `e.name = $${idx}`,
   entityVersion: (idx) => `e.version = $${idx}`,
   type: (idx) => `d.type = $${idx}`,
-  version: (idx) => `d.version = $${idx}`
+  version: (idx) => `d.version = $${idx}`,
+  name: (idx) => `d.name = $${idx}`
 }
 
 export async function listDependencies(pg, query, limit = 100) {
