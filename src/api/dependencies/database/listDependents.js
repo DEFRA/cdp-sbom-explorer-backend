@@ -5,7 +5,8 @@ const whereClauses = {
   lteVersion: (idx) => `d.version_num <= $${idx}`,
   environment: (idx) => `dpl.environment = $${idx}`,
   team: (idx) => `teams.value = $${idx}`,
-  tag: (idx) => `tg.value = $${idx}`
+  tag: (idx) => `tg.value = $${idx}`,
+  entity: (idx) => `e.name = $${idx}`
 }
 
 export async function listDependents(pg, query, limit = 100) {

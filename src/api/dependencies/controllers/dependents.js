@@ -14,7 +14,8 @@ export default {
         lteVersion: Joi.string().trim(),
         environment: Joi.string().trim(),
         team: Joi.string().trim(),
-        tag: Joi.string().trim()
+        tag: Joi.string().trim(),
+        entity: Joi.string().trim()
       })
     }
   },
