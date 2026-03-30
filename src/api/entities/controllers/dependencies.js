@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { listDependencies } from '../database/listDependents.js'
+import { listDependencies } from '../database/listDependencies.js'
 
 export default {
   options: {
