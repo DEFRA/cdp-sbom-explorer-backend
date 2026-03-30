@@ -8,7 +8,7 @@ const whereClauses = {
   name: (idx) => `d.name = $${idx}`
 }
 
-export async function listDependencies(pg, query, limit = 1000) {
+export async function listDependencies(pg, query, limit = 100, offset = 0) {
   const keys = Object.keys(query).filter((q) => whereClauses[q])
   if (keys.length === 0) {
     throw new Error(
@@ -27,18 +27,30 @@ export async function listDependencies(pg, query, limit = 1000) {
   }
 
   const sql = `
-    SELECT e.version as entityversion, d.type, d.name, d.version AS version,
-          array_remove(array_agg(DISTINCT tg.value::TEXT), NULL) AS entitytags
-    FROM entity_dependencies AS ed
-    JOIN entities AS e ON e.id = ed.entity_id
-    JOIN dependencies AS d ON d.id = ed.dependency_id
-    LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version AND tg.value NOT IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
-    WHERE ${where.join(' AND ')}
-    GROUP BY e.version, d.type, d.name, d.version
-    ORDER BY e.version DESC, d.name, d.type
+    SELECT * FROM
+    (
+      SELECT COUNT(*) OVER() AS _total, e.version as entityversion, d.type, d.name, d.version AS version,
+            array_remove(array_agg(DISTINCT tg.value::TEXT), NULL) AS entitytags
+      FROM entity_dependencies AS ed
+      JOIN entities AS e ON e.id = ed.entity_id
+      JOIN dependencies AS d ON d.id = ed.dependency_id
+      LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version AND tg.value NOT IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
+      WHERE ${where.join(' AND ')}
+      GROUP BY e.version, d.type, d.name, d.version
+    ) AS r
+    ORDER BY r.version DESC, r.name, r.type
     LIMIT ${limit}
+    OFFSET ${offset}
   `
 
   const result = await pg.query(sql, values)
-  return result.rows
+
+  const total = result.rows.at(0)?._total ?? 0
+  return {
+    rows: result.rows.map(({ _total, ...columns }) => ({ ...columns })),
+    meta: {
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  }
 }
