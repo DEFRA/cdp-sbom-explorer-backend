@@ -11,7 +11,7 @@ const whereClauses = {
   entity: (idx) => `e.name = $${idx}`
 }
 
-export async function listDependents(pg, query, limit = 100) {
+export async function listDependents(pg, query, limit = 1000) {
   const keys = Object.keys(query).filter((q) => whereClauses[q])
   if (keys.length === 0) {
     throw new Error(
