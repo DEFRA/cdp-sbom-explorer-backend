@@ -50,7 +50,7 @@ export async function listDependencies(pg, query, limit = 100, offset = 0) {
     rows: result.rows.map(({ _total, ...columns }) => ({ ...columns })),
     meta: {
       total,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.floor(total / limit) + 1
     }
   }
 }
