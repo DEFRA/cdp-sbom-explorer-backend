@@ -1,3 +1,5 @@
+import environmentTags from '../../../common/constants/environmentTags.js'
+
 const whereClauses = {
   entityName: (idx) => `e.name = $${idx}`,
   entityVersion: (idx) => `e.version = $${idx}`,
@@ -30,7 +32,7 @@ export async function listDependencies(pg, query, limit = 100) {
     FROM entity_dependencies AS ed
     JOIN entities AS e ON e.id = ed.entity_id
     JOIN dependencies AS d ON d.id = ed.dependency_id
-    LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version
+    LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version AND tg.value NOT IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
     WHERE ${where.join(' AND ')}
     GROUP BY e.version, d.type, d.name, d.version
     ORDER BY e.version DESC, d.name, d.type

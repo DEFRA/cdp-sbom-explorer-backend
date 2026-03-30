@@ -1,9 +1,11 @@
+import environmentTags from '../../../common/constants/environmentTags.js'
+
 const whereClauses = {
   name: (idx) => `d.name = $${idx}`,
   type: (idx) => `d.type = $${idx}`,
   gteVersion: (idx) => `d.version_num >= $${idx}`,
   lteVersion: (idx) => `d.version_num <= $${idx}`,
-  environment: (idx) => `dpl.environment = $${idx}`,
+  environment: (idx) => `env.value = $${idx}`,
   team: (idx) => `teams.value = $${idx}`,
   tag: (idx) => `tg.value = $${idx}`,
   entity: (idx) => `e.name = $${idx}`
@@ -29,7 +31,7 @@ export async function listDependents(pg, query, limit = 100) {
 
   const sql = `
     SELECT e.name, e.version, d.version AS depversion,
-          array_remove(array_agg(DISTINCT dpl.environment::TEXT), NULL) AS environments,
+          array_remove(array_agg(DISTINCT env.value::TEXT), NULL) AS environments,
           array_remove(array_agg(DISTINCT teams.value::TEXT), NULL) AS teams,
           array_remove(array_agg(DISTINCT tg.value::TEXT), NULL) AS tags
     FROM entity_dependencies AS ed
@@ -37,7 +39,8 @@ export async function listDependents(pg, query, limit = 100) {
     JOIN dependencies AS d ON d.id = ed.dependency_id
     LEFT JOIN deployments AS dpl ON dpl.name = e.name AND dpl.version = e.version
     LEFT JOIN labels AS teams ON teams.entity_name = e.name AND teams.key = 'team'
-    LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version
+    LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version AND tg.value NOT IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
+    LEFT JOIN tags AS env ON tg.entity_name = e.name AND tg.entity_version = e.version AND env.value IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
     WHERE ${where.join(' AND ')}
     GROUP BY e.name, e.version, d.version
     ORDER BY e.name ASC, e.version DESC

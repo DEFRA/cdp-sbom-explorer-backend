@@ -1,3 +1,5 @@
+import environmentTags from '../../../common/constants/environmentTags.js'
+
 const whereName = (idx) => `d.name = $${idx}`
 const whereType = (idx) => `d.type = $${idx}`
 const wherePartialName = (idx) => `d.name LIKE $${idx}`
@@ -85,13 +87,16 @@ export async function uniqueVersionForDependency(pg, name, type) {
 }
 
 /**
- * Returns all the distinct entity tags (e.g. latest etc)
+ * Returns all the distinct entity tags (e.g. latest etc) without environment tags
  * @param pg
  * @return {Promise<string[]>}
  */
 export async function uniqueEntityTags(pg) {
   const result = await pg.query(
-    'SELECT DISTINCT value FROM tags ORDER BY value'
+    `SELECT DISTINCT value
+    FROM tags
+    WHERE tags.value NOT IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
+    ORDER BY value`
   )
   return result.rows.map((row) => row.value)
 }
