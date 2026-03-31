@@ -8,7 +8,8 @@ const whereClauses = {
   environment: (idx) => `env.value = $${idx}`,
   team: (idx) => `teams.value = $${idx}`,
   tag: (idx) => `tg.value = $${idx}`,
-  entity: (idx) => `e.name = $${idx}`
+  entity: (idx) => `e.name = $${idx}`,
+  stage: (idx) => `e.stage = $${idx}`
 }
 
 export async function listDependents(pg, query, limit = 100, offset = 0) {
@@ -30,23 +31,22 @@ export async function listDependents(pg, query, limit = 100, offset = 0) {
   }
 
   const sql = `
-    SELECT * FROM
+    SELECT _total, name, version, depversion, environments, teams, tags, stage FROM
     (
-      SELECT COUNT(*) OVER() AS _total, e.name, e.version, d.version AS depversion,
+      SELECT COUNT(*) OVER() AS _total, e.name, e.version, d.version AS depversion, e.created_at, e.stage,
             array_remove(array_agg(DISTINCT env.value::TEXT), NULL) AS environments,
             array_remove(array_agg(DISTINCT teams.value::TEXT), NULL) AS teams,
             array_remove(array_agg(DISTINCT tg.value::TEXT), NULL) AS tags
       FROM entity_dependencies AS ed
       JOIN entities AS e ON e.id = ed.entity_id
       JOIN dependencies AS d ON d.id = ed.dependency_id
-      LEFT JOIN deployments AS dpl ON dpl.name = e.name AND dpl.version = e.version
       LEFT JOIN labels AS teams ON teams.entity_name = e.name AND teams.key = 'team'
       LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version AND tg.value NOT IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
       LEFT JOIN tags AS env ON tg.entity_name = e.name AND tg.entity_version = e.version AND env.value IN (${environmentTags.map((tag) => `'${tag}'`).join(',')})
       WHERE ${where.join(' AND ')}
-      GROUP BY e.name, e.version, d.version
+      GROUP BY e.name, e.version, d.version, e.created_at, e.stage
     ) AS r
-    ORDER BY r.name ASC, r.version DESC
+    ORDER BY r.name ASC, r.created_at DESC, r.version DESC
     LIMIT ${limit}
     OFFSET ${offset}
   `
