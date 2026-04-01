@@ -15,7 +15,9 @@ export default {
         environment: Joi.string().trim(),
         team: Joi.string().trim(),
         tag: Joi.string().trim(),
-        entity: Joi.string().trim()
+        entity: Joi.string().trim(),
+        page: Joi.number().integer().default(1).min(1),
+        size: Joi.number().integer().default(50).min(1).max(100)
       })
     }
   },
@@ -33,7 +35,20 @@ export default {
       searchQuery.lteVersion = semverToBigint(searchQuery.lteVersion)
     }
 
-    const matches = await listDependents(request.pg, searchQuery)
-    return h.response(matches).code(200)
+    const limit = request.query.size
+    const offset = (request.query.page - 1) * limit
+
+    const { rows, meta } = await listDependents(
+      request.pg,
+      searchQuery,
+      limit,
+      offset
+    )
+
+    return h
+      .response(rows)
+      .header('X-Total-Count', meta.total)
+      .header('X-Total-Pages', meta.totalPages)
+      .code(200)
   }
 }

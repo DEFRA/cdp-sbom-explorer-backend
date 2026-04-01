@@ -21,7 +21,12 @@ export default {
       ...request.params
     }
 
-    const matches = await listDependencies(request.pg, searchQuery)
-    return h.response(matches).code(200)
+    const { rows, meta } = await listDependencies(request.pg, searchQuery)
+
+    return h
+      .response(rows)
+      .header('X-Total-Count', meta.total)
+      .header('X-Total-Pages', meta.totalPages)
+      .code(200)
   }
 }
