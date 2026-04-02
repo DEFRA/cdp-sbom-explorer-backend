@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+
+  <changeSet id="1. create-listDependendents-indexes" author="David Beale">
+    <createIndex tableName="tags" indexName="idx_tag_entity_name_entity_version_value">
+      <column name="entity_name"/>
+      <column name="entity_version"/>
+      <column name="value"/>
+    </createIndex>
+
+    <createIndex tableName="labels" indexName="idx_labels_entity_name_key">
+      <column name="entity_name"/>
+      <column name="key"/>
+    </createIndex>
+
+    <createIndex tableName="entities" indexName="idx_entities_name_version">
+      <column name="name"/>
+      <column name="version"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>
