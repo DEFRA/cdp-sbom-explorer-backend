@@ -19,4 +19,16 @@
     </createIndex>
   </changeSet>
 
+  <changeSet id="2. drop-deployments" author="David Beale">
+    <dropIndex tableName="deployments" indexName="idx_deployment_environment_name_version" />
+
+    <dropUniqueConstraint tableName="deployments" constraintName="deployments_name_version_environment_uniq" />
+
+    <dropTable tableName="deployments" />
+  </changeSet>
+
+  <changeSet id="3. tag version" author="David Beale">
+    <tagDatabase tag="v1.3.0" />
+  </changeSet>
+
 </databaseChangeLog>
