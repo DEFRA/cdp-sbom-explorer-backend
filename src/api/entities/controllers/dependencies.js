@@ -12,6 +12,7 @@ export default {
         version: Joi.string().trim(),
         type: Joi.string().trim(),
         name: Joi.string().trim(),
+        stage: Joi.string().trim(),
         page: Joi.number().integer().default(1).min(1),
         size: Joi.number().integer().default(50).min(1).max(100)
       })
