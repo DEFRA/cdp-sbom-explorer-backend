@@ -170,6 +170,26 @@ const config = convict({
       format: String,
       default: 'eu-west-2',
       env: 'AWS_REGION'
+    },
+    pool: {
+      min: {
+        doc: 'Postgres min number of connection',
+        format: Number,
+        default: 1,
+        env: 'DB_POOL_MIN'
+      },
+      max: {
+        doc: 'Postgres max number of connection',
+        format: Number,
+        default: 10,
+        env: 'DB_POOL_MAX'
+      },
+      connectionTimeoutMillis: {
+        doc: 'Postgres max number of connection',
+        format: Number,
+        default: 5000,
+        env: 'DB_POOL_TIMEOUT_MILLIS'
+      }
     }
   },
   log: {
