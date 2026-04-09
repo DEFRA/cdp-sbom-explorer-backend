@@ -47,7 +47,7 @@
     "hapi-pino": "13.0.0",
     "hapi-pulse": "3.0.1",
     "https-proxy-agent": "7.0.6",
-    "joi": "18.0.2",
+    "joi": "18.1.2",
     "node-fetch": "3.3.2",
     "pg": "8.20.0",
     "pg-pool": "3.13.0",
