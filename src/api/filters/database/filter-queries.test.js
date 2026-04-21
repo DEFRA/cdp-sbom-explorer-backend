@@ -3,6 +3,14 @@ import {
   uniqueEntityStages,
   uniqueVersionForDependency
 } from './filter-queries.js'
+import { Metrics } from '@defra/cdp-metrics'
+
+export const logger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+  debug: () => {}
+}
 
 describeWithDb('#uniqueEntityStages', (test) => {
   test('provides a list of all unique stages', async ({ pg }) => {
@@ -22,7 +30,7 @@ describeWithDb('#uniqueEntityStages', (test) => {
       ['foo', '1.0.0', 'development']
     )
 
-    const stages = await uniqueEntityStages(pg)
+    const stages = await uniqueEntityStages(pg, new Metrics(logger))
     expect(stages).toEqual(['development', 'run'])
   })
 })
@@ -53,7 +61,12 @@ describeWithDb('#uniqueVersionForDependency', (test) => {
       ['npm', 'pg-pool', '3.10.1', 44]
     )
 
-    const versions = await uniqueVersionForDependency(pg, 'pino', 'npm')
+    const versions = await uniqueVersionForDependency(
+      pg,
+      'pino',
+      'npm',
+      new Metrics(logger)
+    )
     expect(versions).toEqual(['1.0.0', '1.0.1', '1.2.0'])
   })
 })

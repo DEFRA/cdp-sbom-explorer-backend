@@ -153,5 +153,8 @@ const optionsSchema = Joi.object({
   })
     .optional()
     .unknown(true)
-    .description('override postgres pool settings')
+    .description('override postgres pool settings'),
+  tableStatsPoller: Joi.object({
+    interval: Joi.number()
+  }).optional()
 })

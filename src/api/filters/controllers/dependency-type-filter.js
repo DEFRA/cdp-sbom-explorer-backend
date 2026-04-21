@@ -6,7 +6,7 @@ import { uniqueDependencyTypes } from '../database/filter-queries.js'
 const dependencyTypeFilterController = {
   options: {},
   handler: async (request, h) => {
-    const result = await uniqueDependencyTypes(request.pg)
+    const result = await uniqueDependencyTypes(request.pg, request.metrics())
     return h.response(result).code(200)
   }
 }

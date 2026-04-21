@@ -42,7 +42,8 @@ export default {
       request.pg,
       searchQuery,
       limit,
-      offset
+      offset,
+      request.metrics()
     )
 
     return h

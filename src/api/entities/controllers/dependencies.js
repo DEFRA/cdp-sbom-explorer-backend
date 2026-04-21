@@ -24,7 +24,11 @@ export default {
       ...request.params
     }
 
-    const { rows, meta } = await listDependencies(request.pg, searchQuery)
+    const { rows, meta } = await listDependencies(
+      request.pg,
+      searchQuery,
+      request.metrics()
+    )
 
     return h
       .response(rows)

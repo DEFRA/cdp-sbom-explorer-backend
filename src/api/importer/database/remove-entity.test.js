@@ -1,11 +1,13 @@
 import { upsertEntity } from './upsert-entity.js'
 import { describeWithDb } from '../../../testing/describe-with-db.js'
 import { removeEntity } from './remove-entity.js'
+import { Metrics } from '@defra/cdp-metrics'
 
 describeWithDb('#removeEntity', (test) => {
   test('it removes the entity and all its dependencies', async ({ pg }) => {
-    const keepId = await upsertEntity(pg, 'foo', '1.1.0', 'run')
-    const removeId = await upsertEntity(pg, 'foo', '1.2.0', 'run')
+    const metrics = new Metrics(null)
+    const keepId = await upsertEntity(pg, 'foo', '1.1.0', 'run', metrics)
+    const removeId = await upsertEntity(pg, 'foo', '1.2.0', 'run', metrics)
 
     {
       const result = await pg.query('SELECT id FROM entities')
@@ -27,7 +29,7 @@ describeWithDb('#removeEntity', (test) => {
       [removeId, depId]
     )
 
-    await removeEntity(pg, removeId)
+    await removeEntity(pg, removeId, new Metrics(null))
 
     const result = await pg.query('SELECT id FROM entities')
     expect(result.rows).toEqual([{ id: keepId }])

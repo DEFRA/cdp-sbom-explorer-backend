@@ -8,8 +8,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "NODE_ENV=development npm run server:watch",
-    "dev:debug": "NODE_ENV=development npm run server:debug",
+    "dev": "AWS_EMF_ENVIRONMENT=Local NODE_ENV=development npm run server:watch",
+    "dev:debug": "AWS_EMF_ENVIRONMENT=Local NODE_ENV=development npm run server:debug",
     "docker:dev": "npm run dev",
     "format": "prettier --write \"**/*.{cjs,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{cjs,js,json,md}\"",
@@ -22,8 +22,8 @@
     "server:watch": "nodemon --inspect=0.0.0.0 --ext js,json --legacy-watch ./src",
     "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module",
     "start": "NODE_ENV=production node --use-strict .",
-    "test": "TZ=UTC vitest run --coverage",
-    "test:watch": "TZ=UTC vitest"
+    "test": "AWS_EMF_ENVIRONMENT=Local TZ=UTC vitest run --coverage",
+    "test:watch": "AWS_EMF_ENVIRONMENT=Local TZ=UTC vitest"
   },
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
@@ -33,7 +33,7 @@
     "@aws-sdk/credential-providers": "3.1013.0",
     "@aws-sdk/rds-signer": "3.1013.0",
     "@defra/cdp-auditing": "0.6.0",
-    "@defra/cdp-metrics": "0.3.0",
+    "@defra/cdp-metrics": "0.5.0",
     "@defra/hapi-secure-context": "0.4.0",
     "@defra/hapi-tracing": "1.30.0",
     "@elastic/ecs-pino-format": "1.5.0",

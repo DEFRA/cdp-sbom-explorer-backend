@@ -22,7 +22,13 @@ export const pushTeamsController = {
       p.teams.map((t) => ({ name: p.name, value: t }))
     )
 
-    const result = await bulkUpdateLabels(request, 'team', teamLabels, true)
+    const result = await bulkUpdateLabels(
+      request,
+      'team',
+      teamLabels,
+      request.metrics(),
+      true
+    )
     return h.response({ teamsProvided: teamLabels.length, result }).code(200)
   }
 }

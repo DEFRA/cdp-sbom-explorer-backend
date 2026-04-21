@@ -12,6 +12,8 @@ import { postgres } from './plugins/postgres.js'
 import { s3 } from './plugins/s3.js'
 import { sqs } from './plugins/sqs.js'
 import { sbomBucketListener } from './plugins/sbom-bucket-listener.js'
+import { metrics } from '@defra/cdp-metrics'
+import { pgTableStatsPoller } from './plugins/table-stats-poller.js'
 
 async function createServer() {
   setupProxy()
@@ -52,7 +54,12 @@ async function createServer() {
     requestTracing,
     secureContext,
     pulse,
+    metrics,
     { plugin: postgres.plugin, options: config.get('postgres') },
+    {
+      plugin: pgTableStatsPoller,
+      options: config.get('postgres.tableStatsPoller')
+    },
     {
       plugin: s3.plugin,
       options: {
