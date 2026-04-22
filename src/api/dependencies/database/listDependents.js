@@ -12,13 +12,21 @@ const whereClauses = {
   stage: (idx) => `e.stage = $${idx}`
 }
 
-export async function listDependents(pg, query, limit = 100, offset = 0) {
+export async function listDependents(
+  pg,
+  query,
+  metrics,
+  limit = 100,
+  offset = 0
+) {
   const keys = Object.keys(query).filter((q) => whereClauses[q])
   if (keys.length === 0) {
     throw new Error(
       `Invalid query [${Object.keys(query).join(', ')}] can only use [${Object.keys(whereClauses).join(', ')}] `
     )
   }
+  metrics.counter('ListDependentsOffset', offset)
+  metrics.counter('ListDependentsFilterCount', keys.length)
 
   const where = []
   const values = []
@@ -51,11 +59,15 @@ export async function listDependents(pg, query, limit = 100, offset = 0) {
     OFFSET ${offset}
   `
 
-  const result = await pg.query(sql, values)
+  const result = await metrics.timer('ListDependentsDBLatencyMs', () =>
+    pg.query(sql, values)
+  )
 
+  const rows = result.rows.map(({ _total, ...columns }) => ({ ...columns }))
+  metrics.counter('ListDependentsRowsReturned', rows.length)
   const total = result.rows.at(0)?._total ?? 0
   return {
-    rows: result.rows.map(({ _total, ...columns }) => ({ ...columns })),
+    rows,
     meta: {
       total,
       totalPages: Math.floor(total / limit) + 1

@@ -5,6 +5,7 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { bulkUpdateTags } from './manage-tags.js'
 import { bulkUpdateLabels } from './manage-labels.js'
+import { Metrics } from '@defra/cdp-metrics'
 let container
 let pool
 
@@ -104,20 +105,30 @@ test('deletes existing tags that are not in the update set', async () => {
 })
 
 test('bulk insert labels', async () => {
-  await bulkUpdateLabels({ pg: pool, logger: mockLogger }, 'team', [
-    { name: 'foo-backend', value: 'team-1' },
-    { name: 'bar-backend', value: 'team-2' }
-  ])
+  await bulkUpdateLabels(
+    { pg: pool, logger: mockLogger },
+    'team',
+    [
+      { name: 'foo-backend', value: 'team-1' },
+      { name: 'bar-backend', value: 'team-2' }
+    ],
+    new Metrics(mockLogger)
+  )
   const { rows } = await pool.query("SELECT * FROM labels WHERE key = 'team'")
   expect(rows).toHaveLength(2)
 })
 
 test('bulk insert labels with multiple labels of same key per entity', async () => {
-  await bulkUpdateLabels({ pg: pool, logger: mockLogger }, 'team', [
-    { name: 'foo-backend', value: 'team-1' },
-    { name: 'foo-backend', value: 'team-2' },
-    { name: 'bar-backend', value: 'team-2' }
-  ])
+  await bulkUpdateLabels(
+    { pg: pool, logger: mockLogger },
+    'team',
+    [
+      { name: 'foo-backend', value: 'team-1' },
+      { name: 'foo-backend', value: 'team-2' },
+      { name: 'bar-backend', value: 'team-2' }
+    ],
+    new Metrics(mockLogger)
+  )
   const { rows } = await pool.query("SELECT * FROM labels WHERE key = 'team'")
   expect(rows).toHaveLength(3)
 })
@@ -131,6 +142,7 @@ test('bulk insert labels removes old labels when clear flag is set', async () =>
       { name: 'foo-backend', value: 'team-2' },
       { name: 'bar-backend', value: 'team-2' }
     ],
+    new Metrics(mockLogger),
     true
   )
 
@@ -141,6 +153,7 @@ test('bulk insert labels removes old labels when clear flag is set', async () =>
       { name: 'foo-backend', value: 'team-1' },
       { name: 'bar-backend', value: 'team-2' }
     ],
+    new Metrics(mockLogger),
     true
   )
   const { rows } = await pool.query("SELECT * FROM labels WHERE key = 'team'")

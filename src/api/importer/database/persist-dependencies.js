@@ -7,9 +7,10 @@ const logger = createLogger()
  * @param { import('pg-pool').Pool } pg
  * @param {number|BigInt} entityId
  * @param {{type: string, name: string, version: string, versionNum: BigInt}[]} deps
+ * @param {import('@defra/cdp-metrics').Metrics} metrics
  * @returns {Promise<{inserted: number}>}
  */
-export async function persistDependencies(pg, entityId, deps) {
+export async function persistDependencies(pg, entityId, deps, metrics) {
   if (deps.length === 0) {
     logger.warn('No dependencies found for entity')
     return { inserted: 0 }
@@ -23,11 +24,12 @@ export async function persistDependencies(pg, entityId, deps) {
     entityId
   ]
 
-  const client = await pg.connect()
-  try {
-    await client.query('BEGIN')
+  return metrics.timer('PersistDependenciesDBLatencyMs', async () => {
+    const client = await pg.connect()
+    try {
+      await client.query('BEGIN')
 
-    const insertSql = `
+      const insertSql = `
     WITH input_deps AS (
       SELECT *
       FROM unnest(
@@ -56,14 +58,15 @@ export async function persistDependencies(pg, entityId, deps) {
     SELECT $5::bigint, id
     FROM upserted
     ON CONFLICT DO NOTHING`
-    const insertResult = await client.query(insertSql, params)
-    await client.query('COMMIT')
-    return { inserted: insertResult.rowCount }
-  } catch (e) {
-    logger.error(e)
-    await client.query('ROLLBACK')
-    throw e
-  } finally {
-    client.release()
-  }
+      const insertResult = await client.query(insertSql, params)
+      await client.query('COMMIT')
+      return { inserted: insertResult.rowCount }
+    } catch (e) {
+      logger.error(e)
+      await client.query('ROLLBACK')
+      throw e
+    } finally {
+      client.release()
+    }
+  })
 }

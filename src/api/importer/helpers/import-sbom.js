@@ -22,7 +22,12 @@ const componentTypesToIgnore = new Set(['file'])
  * @param {{reprocess: boolean|null}} options
  * @returns {Promise<{inserted: number}>}
  */
-async function importSbom({ pg, s3Client, logger }, bucket, key, options = {}) {
+async function importSbom(
+  { pg, s3Client, logger, metrics },
+  bucket,
+  key,
+  options = {}
+) {
   const source = sourceFromPath(key)
 
   if (namesToIgnore.has(source.name)) {
@@ -38,7 +43,7 @@ async function importSbom({ pg, s3Client, logger }, bucket, key, options = {}) {
   }
 
   const raw = await downloadAndDecompress(s3Client, bucket, key)
-  return await processSbom(pg, source, raw, options)
+  return await processSbom(pg, source, raw, metrics, options)
 }
 
 /**
@@ -46,10 +51,11 @@ async function importSbom({ pg, s3Client, logger }, bucket, key, options = {}) {
  * @param pg
  * @param {{name: string, version: string, stage: string}} source
  * @param {string} rawSBOM
+ * @param {import('@defra/cdp-metrics').Metrics} metrics
  * @param {{reprocess: boolean|null}} options
  * @returns {Promise<{inserted: number}>}
  */
-async function processSbom(pg, source, rawSBOM, options = {}) {
+async function processSbom(pg, source, rawSBOM, metrics, options = {}) {
   // parse json
   const sbomJson = JSON.parse(rawSBOM)
 
@@ -70,11 +76,12 @@ async function processSbom(pg, source, rawSBOM, options = {}) {
     pg,
     entityName,
     entityVersion,
-    entityStage
+    entityStage,
+    metrics
   )
   if (existingEntityId) {
     if (options.reprocess) {
-      await removeEntity(pg, existingEntityId)
+      await removeEntity(pg, existingEntityId, metrics)
     } else {
       return { inserted: 0 }
     }
@@ -84,7 +91,8 @@ async function processSbom(pg, source, rawSBOM, options = {}) {
     pg,
     entityName,
     entityVersion,
-    entityStage
+    entityStage,
+    metrics
   )
 
   const deps = []
@@ -98,7 +106,7 @@ async function processSbom(pg, source, rawSBOM, options = {}) {
       deps.push({ type, name, version, versionNum })
     })
 
-  return await persistDependencies(pg, entityId, deps)
+  return await persistDependencies(pg, entityId, deps, metrics)
 }
 
 export { importSbom, processSbom }

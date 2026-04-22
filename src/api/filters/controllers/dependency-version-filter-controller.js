@@ -13,7 +13,12 @@ const dependencyVersionFilterController = {
   handler: async (request, h) => {
     const type = request.params.type
     const name = request.params.name
-    const result = await uniqueVersionForDependency(request.pg, name, type)
+    const result = await uniqueVersionForDependency(
+      request.pg,
+      name,
+      type,
+      request.metrics
+    )
     return h.response(result).code(200)
   }
 }

@@ -190,6 +190,14 @@ const config = convict({
         default: 5000,
         env: 'DB_POOL_TIMEOUT_MILLIS'
       }
+    },
+    tableStatsPoller: {
+      interval: {
+        doc: 'Interval (ms) for Postgres table stats poller',
+        format: Number,
+        default: 1000 * 60 * 10,
+        env: 'DB_TABLE_STATS_POLLER_INTERVAL'
+      }
     }
   },
   log: {

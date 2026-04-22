@@ -1,9 +1,11 @@
 import { upsertEntity } from './upsert-entity.js'
 import { describeWithDb } from '../../../testing/describe-with-db.js'
+import { Metrics } from '@defra/cdp-metrics'
 
 describeWithDb('#upsertEntity', (test) => {
   test('it inserts an entity', async ({ pg }) => {
-    const id = await upsertEntity(pg, 'foo', '1.2.0', 'run')
+    const metrics = new Metrics(null)
+    const id = await upsertEntity(pg, 'foo', '1.2.0', 'run', metrics)
     expect(id).toBeDefined()
     const result = await pg.query(
       "SELECT name, version, stage FROM public.entities WHERE name = 'foo' and version = '1.2.0' and stage = 'run'"
@@ -14,8 +16,9 @@ describeWithDb('#upsertEntity', (test) => {
   })
 
   test('it ignores duplicates', async ({ pg }) => {
-    const id1 = await upsertEntity(pg, 'dupe', '1.2.0', 'run')
-    const id2 = await upsertEntity(pg, 'dupe', '1.2.0', 'run')
+    const metrics = new Metrics(null)
+    const id1 = await upsertEntity(pg, 'dupe', '1.2.0', 'run', metrics)
+    const id2 = await upsertEntity(pg, 'dupe', '1.2.0', 'run', metrics)
     expect(id1).toBeDefined()
     expect(id1).toEqual(id2)
 
@@ -26,10 +29,11 @@ describeWithDb('#upsertEntity', (test) => {
   })
 
   test('it inserts different stages of the same entity', async ({ pg }) => {
-    const runId = await upsertEntity(pg, 'bar', '1.99.0', 'run')
+    const metrics = new Metrics(null)
+    const runId = await upsertEntity(pg, 'bar', '1.99.0', 'run', metrics)
     expect(runId).toBeDefined()
 
-    const buildId = await upsertEntity(pg, 'bar', '1.99.0', 'build')
+    const buildId = await upsertEntity(pg, 'bar', '1.99.0', 'build', metrics)
     expect(buildId).toBeDefined()
     expect(runId).not.toEqual(buildId)
 

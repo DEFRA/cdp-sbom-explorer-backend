@@ -6,7 +6,7 @@ import { uniqueEntityTags } from '../database/filter-queries.js'
 const entityTagFilterController = {
   options: {},
   handler: async (request, h) => {
-    const result = await uniqueEntityTags(request.pg)
+    const result = await uniqueEntityTags(request.pg, request.metrics)
     return h.response(result).code(200)
   }
 }
