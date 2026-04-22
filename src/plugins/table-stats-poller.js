@@ -36,7 +36,6 @@ function startPostgresStatsPoller({ pg, logger }, metrics, { interval }) {
         SELECT
           relname AS table,
           n_live_tup,
-          n_dead_tup,
           seq_scan,
           idx_scan
         FROM pg_stat_user_tables
@@ -51,14 +50,12 @@ function startPostgresStatsPoller({ pg, logger }, metrics, { interval }) {
         const prefix = tableMetricPrefix(row.table)
 
         const liveTuples = Number(row.n_live_tup ?? 0)
-        const deadTuples = Number(row.n_dead_tup ?? 0)
         const seqScans = Number(row.seq_scan ?? 0)
         const idxScans = Number(row.idx_scan ?? 0)
 
         counts[row.table] = liveTuples
 
         metrics.gauge(`${prefix}RowCount`, liveTuples)
-        metrics.gauge(`${prefix}DeadTupleCount`, deadTuples)
         metrics.gauge(`${prefix}SeqScanCount`, seqScans)
         metrics.gauge(`${prefix}IndexScanCount`, idxScans)
       }
