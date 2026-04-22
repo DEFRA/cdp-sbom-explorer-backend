@@ -99,7 +99,7 @@ export const pgTableStatsPoller = {
     name: 'pg-table-stats',
     version: '1.0.0',
     register(server, options) {
-      startPostgresStatsPoller(server, server.metrics(), options)
+      startPostgresStatsPoller(server, server.metrics, options)
     }
   }
 }

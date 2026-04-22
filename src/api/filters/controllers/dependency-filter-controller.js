@@ -20,11 +20,7 @@ const dependencyFilterController = {
         query.partialName = query.partialName + '%'
       }
     }
-    const result = await uniqueDependencies(
-      request.pg,
-      query,
-      request.metrics()
-    )
+    const result = await uniqueDependencies(request.pg, query, request.metrics)
     return h.response(result).code(200)
   }
 }

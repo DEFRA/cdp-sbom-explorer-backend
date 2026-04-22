@@ -41,9 +41,9 @@ export default {
     const { rows, meta } = await listDependents(
       request.pg,
       searchQuery,
+      request.metrics,
       limit,
-      offset,
-      request.metrics()
+      offset
     )
 
     return h

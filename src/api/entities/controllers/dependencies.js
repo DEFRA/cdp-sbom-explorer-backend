@@ -27,7 +27,7 @@ export default {
     const { rows, meta } = await listDependencies(
       request.pg,
       searchQuery,
-      request.metrics()
+      request.metrics
     )
 
     return h

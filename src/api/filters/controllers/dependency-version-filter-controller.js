@@ -17,7 +17,7 @@ const dependencyVersionFilterController = {
       request.pg,
       name,
       type,
-      request.metrics()
+      request.metrics
     )
     return h.response(result).code(200)
   }

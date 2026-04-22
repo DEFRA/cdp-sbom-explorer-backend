@@ -26,7 +26,7 @@ export const pushTeamsController = {
       request,
       'team',
       teamLabels,
-      request.metrics(),
+      request.metrics,
       true
     )
     return h.response({ teamsProvided: teamLabels.length, result }).code(200)

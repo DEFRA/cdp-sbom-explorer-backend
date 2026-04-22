@@ -6,7 +6,7 @@ import { uniqueEntityStages } from '../database/filter-queries.js'
 const entityStageFilterController = {
   options: {},
   handler: async (request, h) => {
-    const result = await uniqueEntityStages(request.pg, request.metrics())
+    const result = await uniqueEntityStages(request.pg, request.metrics)
     return h.response(result).code(200)
   }
 }
