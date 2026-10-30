@@ -18,7 +18,8 @@ const dependencySearchController = {
         lte: Joi.string().trim().min(1),
         team: Joi.string().trim().min(1),
         stage: Joi.string().trim().min(1),
-        environment: Joi.string().trim().min(1)
+        environment: Joi.string().trim().min(1),
+        limit: Joi.number().min(1).default(2000)
       })
     }
   },
