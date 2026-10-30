@@ -63,10 +63,12 @@ export function buildSearchQuery(query) {
     'LEFT JOIN labels AS labels ON labels.entity_name = e.name',
     'LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version'
   ]
-
+  const group =
+    'GROUP BY e.name, e.version, d.version, e.stage, d.type, d.version_num'
   const limit = query.limit
   const limitSql = limit ? ` LIMIT ${limit}` : ''
-  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')} ORDER BY d.version_num DESC, e.name ASC${limitSql}`
+
+  const sql = `${select} ${joins.join(' ')} WHERE ${where.join(' AND ')} ${group} ORDER BY d.version_num DESC, e.name ASC${limitSql}`
   return { sql, values }
 }
 

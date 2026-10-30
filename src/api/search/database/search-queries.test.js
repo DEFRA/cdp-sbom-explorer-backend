@@ -4,7 +4,8 @@ describe('#search-queries', () => {
   describe('#build-query', () => {
     const baseSql =
       "SELECT e.name, e.version, e.stage, d.version as depversion, d.type as deptype, array_remove(array_agg(DISTINCT concat(labels.key::TEXT, ':', labels.value::TEXT)), NULL) AS labels, array_remove(array_agg(DISTINCT tg.value::TEXT), NULL) AS tags FROM entity_dependencies as ed JOIN entities as e ON e.id = ed.entity_id JOIN dependencies as d ON d.id = ed.dependency_id LEFT JOIN labels AS labels ON labels.entity_name = e.name LEFT JOIN tags AS tg ON tg.entity_name = e.name AND tg.entity_version = e.version"
-    const endSql = 'ORDER BY d.version_num DESC, e.name ASC'
+    const endSql =
+      'GROUP BY e.name, e.version, d.version, e.stage, d.type, d.version_num ORDER BY d.version_num DESC, e.name ASC'
 
     test('name', () => {
       const query = buildSearchQuery({ name: 'bar' })
