@@ -1,0 +1,157 @@
+openapi: '3.0.0'
+servers:
+  - url: https://cdp-sbom-explorer-backend.api.management.cdp-int.defra.cloud/
+info:
+  contact:
+    name: CDP Platform Team
+  version: '1.0.0'
+  title: 'CDP SBOM Explorer Backend'
+  description: Query dependency usage of CDP hosted services
+
+paths:
+  /search:
+    parameters:
+      - name: name
+        description: Name of the dependency/library/package to search for
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/DependencyName'
+      - name: type
+        description: Filter by dependency type. This can help disambiguate depedencies with the same name in different languages.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/DependencyType'
+      - name: version
+        description: Filter by exact version number match.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/DependencyVersion'
+      - name: gte
+        description: Filter by dependencies that are greater than or equal to the version in the parameter.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/DependencyVersion'
+      - name: lte
+        description: Filter by dependencies that are less than or equal to the version in the parameter.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/DependencyVersion'
+      - name: stage
+        description: Filter by build stage/container. This can be used to include/exclude build dependencies or restrict it just to runnable images (`stage=run`).
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/DependencyStage'
+      - name: environment
+        description: Filter by environment. This will only list services currently running in an environment.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Environment'
+      - name: tag
+        description: Filter by tag.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Tag'
+      - name: team
+        description: Filter by portal team name.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Team'
+      - name: Limit
+        description: "Max results to return"
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Limit'
+    get:
+      summary: Read a spacecraft
+      responses:
+        '200':
+          description: The spacecraft corresponding to the provided `spacecraftId`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DependencyMatches'
+        '400':
+          description: Bad request
+        '500':
+          description: Unexpected error
+
+components:
+  schemas:
+    DependencyName:
+      description: The name of the dependency/library/component
+      type: string
+    DependencyType:
+      type: string
+      description: What kind of dependency it is (npm, nuget, deb, binary, etc)
+    DependencyVersion:
+      type: string
+      description: Dependency version number.
+    DependencyStage:
+      type: string
+      description: Docker build stage name (or `run` for the final runnable image)
+    Environment:
+      type: string
+      description: CDP Deployment environment, or `latest` to show the most recent build. Alias for `tag`.
+      enum:
+        - infra-dev
+        - management
+        - dev
+        - test
+        - perf-test
+        - ext-test
+        - prod
+        - latest.
+    Team:
+      type: string
+      description: CDP team name.
+    Tag:
+      type: string
+      description: Adhoc tags associated with a container, currently only used for environment & latest tags.
+    Label:
+      type: string
+      description: Adhoc labels associated with a container, currently containts team names. key:value format
+    Limit:
+      type: integer
+      format: int32
+      description: Max results to return
+      default: 2000
+    DependencyMatch:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of service using dependency
+        version:
+          type: string
+          description: Version of service using dependency
+        stage:
+          type: string
+          description: Build/Run stage the dependency was used in
+        depversion:
+          type: string
+          description: Version of dependency used
+        deptype:
+          type: string
+          description: Type of depenedency
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+    DependencyMatches:
+      type: object
+      items:
+        $ref: '#/components/schemas/DependencyMatch'

@@ -18,6 +18,7 @@ const dependencySearchController = {
         lte: Joi.string().trim().min(1),
         team: Joi.string().trim().min(1),
         stage: Joi.string().trim().min(1),
+        tag: Joi.string().trim().min(1),
         environment: Joi.string().trim().min(1),
         limit: Joi.number().min(1).default(2000)
       })
@@ -32,6 +33,10 @@ const dependencySearchController = {
 
     if (searchQuery.lte) {
       searchQuery.lte = semverToBigint(searchQuery.lte)
+    }
+
+    if (searchQuery.team) {
+      searchQuery.team = searchQuery.team.toLowerCase()
     }
 
     const matches = await searchDependencies(request.pg, searchQuery)

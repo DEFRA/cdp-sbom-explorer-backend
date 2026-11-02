@@ -104,6 +104,14 @@ describe('#search-queries', () => {
       expect(query.values).toEqual(['bar', 10, 20, 'dev'])
     })
 
+    test('team', () => {
+      const query = buildSearchQuery({ team: 'cdp-platform-team' })
+      expect(query.sql).toEqual(
+        `${baseSql} WHERE EXISTS (SELECT 1 FROM labels l WHERE l.entity_name = e.name AND l.key = 'team' AND l.value = $1) ${endSql}`
+      )
+      expect(query.values).toEqual(['cdp-platform-team'])
+    })
+
     test('invalid', () => {
       const query = buildSearchQuery({ baz: 'bar' })
       expect(query).toBeUndefined()

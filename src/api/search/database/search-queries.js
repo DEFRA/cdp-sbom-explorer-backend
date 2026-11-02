@@ -25,7 +25,6 @@ const whereClauses = {
 /**
  * A basic WHERE clause builder to support dynamic queries.
  * @param {Object} query
- * @param {Number|null} limit
  * @return {{sql: string, values: *[]}|undefined}
  */
 export function buildSearchQuery(query) {
@@ -79,7 +78,7 @@ export function buildSearchQuery(query) {
  * @return {Promise<{name: string, version: string, stage: string}[]>}
  */
 async function searchDependencies(pg, query) {
-  const { sql, values } = buildSearchQuery(query, 1000) // TODO: hardcoded limit for now, we should probably paginate
+  const { sql, values } = buildSearchQuery(query) // TODO: hardcoded limit for now, we should probably paginate
   if (!sql || !values) {
     throw new Error(
       `Invalid query [${Object.keys(query).join(', ')}] can only use [${Object.keys(whereClauses).join(', ')}] `
