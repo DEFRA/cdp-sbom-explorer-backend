@@ -20,19 +20,8 @@ function semverToBigint(version) {
   const clamp16 = (n) => Math.max(0, Math.min(0xffff, n | 0))
   const clampExtra = (n) => Math.max(0, Math.min(0x7fff, n | 0))
 
-  if (numericSegments.length < 3) {
-    while (numericSegments.length < 3) {
-      numericSegments.push(0)
-    }
-  }
-
-  if (numericSegments.length === 3) {
-    const [major, minor, patch] = parts
-    return (
-      (BigInt(clamp16(major)) << 32n) |
-      (BigInt(clamp16(minor)) << 16n) |
-      BigInt(clamp16(patch))
-    )
+  while (numericSegments.length < 4) {
+    numericSegments.push(0)
   }
 
   if (numericSegments.length === 4) {

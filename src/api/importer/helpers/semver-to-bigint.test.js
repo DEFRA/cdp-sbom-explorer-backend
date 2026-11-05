@@ -6,17 +6,18 @@ describe('#semverToBigint', () => {
    * For a normal 3 part sem ver string it stores each part as a 16 bit int
    * with patch in the least significant 16 bits, follows by min and maj.
    * e.g.
-   * |blank|major|minor|patch|
+   * |0|major|minor|patch|
    * |48-63|32-48|16-32| 0-16|
    */
   test('turns a maj.min.patch semver to bigint', () => {
     const result = semverToBigint('1.255.8')
 
-    expect(result.toString(16)).toEqual(semverAsHex(1, 255, 8))
+    expect(result.toString(16)).toEqual(semverAsHex(1, 255, 8, 0))
 
-    expect(result & 0xffffn).toEqual(8n)
-    expect((result >> 16n) & 0xffffn).toEqual(255n)
-    expect((result >> 32n) & 0xffffn).toEqual(1n)
+    expect(result & 0xffffn).toEqual(0n)
+    expect((result >> 16n) & 0xffffn).toEqual(8n)
+    expect((result >> 32n) & 0xffffn).toEqual(255n)
+    expect((result >> 48n) & 0xffffn).toEqual(1n)
   })
 
   test('we can compare the bigInt version', () => {
@@ -34,6 +35,12 @@ describe('#semverToBigint', () => {
     expect(semverToBigint('1.1.1')).toBeLessThan(semverToBigint('1.1.2'))
 
     expect(semverToBigint('10.33.1')).toEqual(semverToBigint('10.33.1'))
+
+    expect(semverToBigint('8.0.33.0')).toBeLessThan(semverToBigint('8.0.999'))
+
+    expect(semverToBigint('8.0.33.0')).toEqual(semverToBigint('8.0.33'))
+    expect(semverToBigint('8')).toEqual(semverToBigint('8.0.0'))
+    expect(semverToBigint('8')).toEqual(semverToBigint('8.0.0.0'))
   })
 
   /**
@@ -61,9 +68,10 @@ describe('#semverToBigint', () => {
    * @param {number} patch
    * @return {string}
    */
-  function semverAsHex(maj, min, patch) {
+  function semverAsHex(extra, maj, min, patch) {
     return (
-      maj.toString(16) +
+      extra.toString(16) +
+      maj.toString(16).padStart(4, '0') +
       min.toString(16).padStart(4, '0') +
       patch.toString(16).padStart(4, '0')
     )
