@@ -1,5 +1,5 @@
 import { semverToBigint } from '../../importer/helpers/semver-to-bigint.js'
-import { listDependencyVersions } from '../database/dependency-versions.js'
+import { listDependencyVersions, updateDependencyVersions } from '../database/dependency-versions.js'
 
 export default {
   handler: async (request, h) => {
@@ -11,7 +11,7 @@ export default {
 
       request.logger.info(`Washing dependencies with Id ${dependencies.at(0).id} to ${dependencies.at(-1).id}`)
 
-      // console.table(dependencies)
+      await updateDependencyVersions(request.pg, request.logger, dependencies)
     }
 
     return h

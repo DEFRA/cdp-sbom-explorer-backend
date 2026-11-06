@@ -18,3 +18,21 @@ export async function* listDependencyVersions(pg, logger, startOffset = 0) {
     offset = offset + limit
   } while (rowCount === limit)
 }
+
+
+export async function updateDependencyVersions(pg, logger, dependencies = []) {
+
+  const updates = dependencies.map(
+    ({ id, versionNum }) => `(${id},${versionNum})`
+  ).join(',\n')
+
+  const sql = `UPDATE dependencies
+    SET version_num = update.version_num
+    FROM (VALUES
+      ${updates}
+    ) as update(id, version_num)
+    WHERE dependencies.id = update.id`
+
+  const result = await pg.query(sql)
+  logger.info(`Washed ${result.rowCount} dependencies`)
+}
