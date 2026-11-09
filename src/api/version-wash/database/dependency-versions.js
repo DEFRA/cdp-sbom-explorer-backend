@@ -1,5 +1,5 @@
 export async function* listDependencyVersions(pg, logger, startOffset = 0) {
-  const limit = 10000;
+  const limit = 10000
   let offset = startOffset
   let rowCount = 0
 
@@ -19,12 +19,10 @@ export async function* listDependencyVersions(pg, logger, startOffset = 0) {
   } while (rowCount === limit)
 }
 
-
 export async function updateDependencyVersions(pg, logger, dependencies = []) {
-
-  const updates = dependencies.map(
-    ({ id, versionNum }) => `(${id},${versionNum})`
-  ).join(',\n')
+  const updates = dependencies
+    .map(({ id, versionNum }) => `(${id},${versionNum})`)
+    .join(',\n')
 
   const sql = `UPDATE dependencies
     SET version_num = update.version_num
