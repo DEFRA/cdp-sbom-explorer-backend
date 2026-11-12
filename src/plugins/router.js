@@ -5,7 +5,6 @@ import { importerRoutes } from '../api/importer/routes.js'
 import { metadataRoutes } from '../api/metadata/routes.js'
 import dependenciesRoutes from '../api/dependencies/routes.js'
 import entitiesRoutes from '../api/entities/routes.js'
-import washRoutes from '../api/version-wash/routes.js'
 
 const router = {
   plugin: {
@@ -18,7 +17,6 @@ const router = {
       server.route(metadataRoutes)
       server.route(dependenciesRoutes)
       server.route(entitiesRoutes)
-      server.route(washRoutes)
     }
   }
 }
