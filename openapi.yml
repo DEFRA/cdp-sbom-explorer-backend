@@ -65,7 +65,7 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/Team'
-      - name: Limit
+      - name: limit
         description: "Max results to return"
         in: query
         required: false

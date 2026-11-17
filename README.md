@@ -77,6 +77,9 @@ When running locally ensure the following:
 | `GET: /health`    | Health                                      |
 | `POST: /backfill` | Triggers the backfill job                   |
 | `POST: /import`   | Imports a specific file (params key=s3 key) |
+| `GET: /search`    | Find services that use dependencies         |
+
+For supported query parameters on `/search`, see [`API.md`](./API.md), located alongside this README. The full API specification is available in [`openapi.yml`](./openapi.yml) at the repository root.
 
 ## Licence
 
